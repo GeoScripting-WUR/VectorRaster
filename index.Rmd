@@ -51,6 +51,8 @@ There is one function that allows to convert a object in vector for to a raster 
 
 Mask using a single feature/polygon of a bigger SpatialPolygonDataFrame.
 
+Note the `inverse=` argument of `mask()`, which allows to mask the inverse of the area covered by the features.
+ 
 # Extract
 
 The most common operation when combining vector and raster data is the extraction. It simply consists in extracting the values of a raster object for locations specified by a vector object. The object can be one of the class of the sp package, or an extent object.
@@ -59,7 +61,9 @@ Because only one value per feature can be returned, if the vector object used en
 
 Extract from spatialLine for transect (can look cool for DEM, and extract profile). (See rasterVis package maybe)
 
-# 
+# Example - *A simple land cover classification of Wageningen from Landsat 8 data*
+
+Using the same data as you used in the [exercise](http://geoscripting-wur.github.io/IntroToRaster/#exercise-design-a-pre-processing-chain-to-assess-change-in-ndvi-over-time) of the raster lesson.
 
 # Exercise
 
