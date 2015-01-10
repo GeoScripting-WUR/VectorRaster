@@ -1,0 +1,66 @@
+---
+title: "Raster Vector integration in R"
+author: "Loïc Dutrieux"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    number_sections: yes
+    theme: cosmo
+    toc: yes
+    toc_depth: 4
+---
+
+# Today (12/01/2015)
+
+- Morning: Self-study from home or PC38 - Go through the following tutorial
+- 1330-1430: Questions and clarifications with Loïc
+- Rest of the afternoon: Do/finalise the exercise.
+
+# Today's learning objectives
+At the end of the lecture, you should be able to
+
+
+* Have an overview of what can be achived when combining raster and vector data in R
+* Be able to extract raster data using vector data
+
+
+# Introduction
+
+In the previous lectures we saw how to deal with [raster](http://geoscripting-wur.github.io/IntroToRaster/) data using R, as well as how to deal with [vector](http://geoscripting-wur.github.io/IntroToVector/) data and the multiple classes of the sp package. In the current lesson, we'll see what can be done when the two worlds of vector data and raster data intersect.
+
+# Conversions
+
+You will find some utilities in R to convert data from raster to vector format and vice-versa. However, whenever you start converting objects, you should wondering whether you are taking the right approach to solve your problem. An approach that does not involve converting your data from vector to raster or the opposite should almost always be preferred.
+
+As a result, because these functions are only useful for some very particular situations, I only give below a brief description of them.
+
+## Vector to raster
+
+There is one function that allows to convert a object in vector for to a raster object. It is the `rasterize()` function.
+
+## Raster to vector
+
+`rasterToPoints()`
+`rasterToPolygons()`
+
+# Geometric operations
+
+## Crop
+
+## Mask
+
+Mask using a single feature/polygon of a bigger SpatialPolygonDataFrame.
+
+# Extract
+
+The most common operation when combining vector and raster data is the extraction. It simply consists in extracting the values of a raster object for locations specified by a vector object. The object can be one of the class of the sp package, or an extent object.
+
+Because only one value per feature can be returned, if the vector object used encompasses several pixels per feature, a function has to be provided. Note that although most often the function `min`, `max`, `mean` and `median` function are used for the spatial aggregation, any custom made function can be used function can be used.
+
+Extract from spatialLine for transect (can look cool for DEM, and extract profile). (See rasterVis package maybe)
+
+# 
+
+# Exercise
+
+[product details](https://lpdaac.usgs.gov/products/modis_products_table/mod13a3)
