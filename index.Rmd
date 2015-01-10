@@ -67,6 +67,7 @@ Using the same data as you used in the [exercise](http://geoscripting-wur.github
 
 
 ```{r, eval=FALSE}
+library(raster)
 # Download, unzip and load the data
 download.file(url = 'https://github.com/GeoScripting-WUR/VectorRaster/raw/gh-pages/data/landsat8.zip', destfile = 'landsat8.zip', method = 'auto')
 
@@ -78,6 +79,7 @@ wagLandsat <- brick(landsatPath)
 ```
 
 ```{r, echo=FALSE}
+library(raster)
 wagLandsat <- brick('data/LC81970242014109LGN00.grd')
 ```
 
@@ -100,6 +102,7 @@ head(nlCity@data)
 Seems that the municipality names are in the `NAME_2` column.
 
 ```{r}
+library(rgdal)
 wagContour <- nlCity[nlCity$NAME_2 == 'Wageningen',]
 wagContourUTM <- spTransform(wagContour, CRS(proj4string(wagLandsat)))
 wagLandsatSub <- mask(wagLandsat, wagContourUTM)
@@ -120,6 +123,7 @@ waterUTM <- spTransform(water, CRS(proj4string(wagLandsat)))
 
 ```{r, echo=FALSE}
 water <- readOGR('data/Water.shp', layer = 'Water')
+waterUTM <- spTransform(water, CRS(proj4string(wagLandsat)))
 ```
 
 ```{r}
