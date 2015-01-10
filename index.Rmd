@@ -65,6 +65,69 @@ Extract from spatialLine for transect (can look cool for DEM, and extract profil
 
 Using the same data as you used in the [exercise](http://geoscripting-wur.github.io/IntroToRaster/#exercise-design-a-pre-processing-chain-to-assess-change-in-ndvi-over-time) of the raster lesson.
 
+
+```{r, eval=FALSE}
+# Download, unzip and load the data
+download.file(url = 'https://github.com/GeoScripting-WUR/VectorRaster/raw/gh-pages/data/landsat8.zip', destfile = 'landsat8.zip', method = 'auto')
+
+unzip('landsat8.zip')
+# Identify the right file
+landsatPath <- list.files(pattern = glob2rx('LC8*.grd'), full.names = TRUE)
+
+wagLandsat <- brick(landsatPath)
+```
+
+```{r, echo=FALSE}
+wagLandsat <- brick('data/LC81970242014109LGN00.grd')
+```
+
+We can start by visualizing the data, since it is a multispectral image, we can use `plotRGB()` to do so.
+
+
+```{r, fig.align='center'}
+# plotRGB does not support negative values, so that they need to be removed
+wagLandsat[wagLandsat < 0] <- NA
+plotRGB(wagLandsat, 5, 4, 3)
+```
+
+```{r}
+# Download municipality boundaries
+nlCity <- getData('GADM',country='NLD', level=3)
+class(nlCity)
+head(nlCity@data)
+```
+
+Seems that the municipality names are in the `NAME_2` column.
+
+```{r}
+wagContour <- nlCity[nlCity$NAME_2 == 'Wageningen',]
+wagContourUTM <- spTransform(wagContour, CRS(proj4string(wagLandsat)))
+wagLandsatSub <- mask(wagLandsat, wagContourUTM)
+plotRGB(wagLandsatSub, 5, 4, 3)
+plot(wagContourUTM, add = TRUE)
+```
+
+We also have a water mask of Wageningen in vector format.
+
+```{r, eval=FALSE}
+download.file(url = 'https://github.com/GeoScripting-WUR/VectorRaster/raw/gh-pages/data/wageningenWater.zip', destfile = 'wageningenWater.zip', method = 'auto')
+unzip('wageningenWater.zip')
+# SQLITE does not work well, need to change that 
+ogrListLayers('waterWageningen.sqlite')
+water <- readOGR('', layer = 'waterwageningen')
+waterUTM <- spTransform(water, CRS(proj4string(wagLandsat)))
+```
+
+```{r, echo=FALSE}
+water <- readOGR('data/Water.shp', layer = 'Water')
+```
+
+```{r}
+wagLandsatSubW <- mask(wagLandsatSub, mask = waterUTM, inverse = TRUE)
+plotRGB(wagLandsatSubW, 5, 4, 3)
+plot(waterUTM, col = 'blue', add = TRUE)
+```
+
 # Exercise
 
 [product details](https://lpdaac.usgs.gov/products/modis_products_table/mod13a3)
