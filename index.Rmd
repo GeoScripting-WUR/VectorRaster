@@ -30,7 +30,7 @@ In the previous lectures we saw how to deal with [raster](http://geoscripting-wu
 
 # Conversions
 
-You will find some utilities in R to convert data from raster to vector format and vice-versa. However, whenever you start converting objects, you should wondering whether you are taking the right approach to solve your problem. An approach that does not involve converting your data from vector to raster or the opposite should almost always be preferred.
+You will find some utilities in R to convert data from raster to vector format and vice-versa. However, whenever you start converting objects, you should wonder whether you are taking the right approach to solve your problem. An approach that does not involve converting your data from vector to raster or the opposite should almost always be preferred.
 
 As a result, because these functions are only useful for some very particular situations, I only give below a brief description of them.
 
@@ -40,30 +40,43 @@ There is one function that allows to convert a object in vector for to a raster 
 
 ## Raster to vector
 
-`rasterToPoints()`
-`rasterToPolygons()`
+Two functions allow to convert raster data to vector; the `rasterToPoints()` and `rasterToPolygons()` functions. The latter can be useful to convert the result of a classification. In that case, set `dissolve =` to `TRUE`.
 
 # Geometric operations
 
-## Crop
+Raw raster data do not usually conform to any notion of administrative or geographical boundaries. Vector data (and extents) can be used to mask or crop data to a desired region of interest.
+
+## `crop`
+
+Cropping consists in reducing the extent of a spatial object to a smaller extent. As a result, the output of `crop()` will automatically be rectangular and will not consider any features such as polygons to perform the subsetting. It is often useful to crop data as tightly as possible to the area under investigation to reduce the amount of data and have a more focused view when visualizing the data.
+Crop uses objects of class `extent` to define the new extent, or ''any object that can be coerced to an extent''. This means that practically all spatial objects (raster or vector) can be used directly in crop. Considering two raster objects `r1` and `r2` with `r2` smaller than `r1`, you can simply use `crop(r1, r2)` in order to crop `r1` to the extent of `r2`.
+If you want to 'cut' your raster data following the contours of a polygon, then you need to use the `mask()` function.
+
+You can easily define an extent interactively (by clicking) thanks to the `drawExtent()` function.
 
 ## Mask
 
-Mask using a single feature/polygon of a bigger SpatialPolygonDataFrame.
+Mask can be used with almost all spatial objects to mask (set to NA), values of a raster* object. When used with a SpatialPolygon* object, mask will keep values of the raster overlayed by polygons and mask the values outside of polygons.
 
-Note the `inverse=` argument of `mask()`, which allows to mask the inverse of the area covered by the features. We will use this feature of mask later in the tutorial to exclude water areas of a rater defined in an independent SpatialPolygons* object.
+Note the very useful `inverse=` argument of `mask()`, which allows to mask the inverse of the area covered by the features. We will use this feature of mask later in the tutorial to exclude water areas of a raster, defined in an independent SpatialPolygons* object.
  
 # Extract
 
 The most common operation when combining vector and raster data is the extraction. It simply consists in extracting the values of a raster object for locations specified by a vector object. The object can be one of the class of the sp package, or an extent object.
 
-Because only one value per feature can be returned, if the vector object used encompasses several pixels per feature, a function has to be provided. Note that although most often the function `min`, `max`, `mean` and `median` function are used for the spatial aggregation, any custom made function can be used function can be used.
-
-Extract from spatialLine for transect (can look cool for DEM, and extract profile). (See rasterVis package maybe)
+When using `extract()` with SpatialPolygons* or SpatialLines* and feature are overlaying or intersecting several features, a function (`fun =`) can also be used to summarize the values. Note that although most often the function `min`, `max`, `mean` and `median` functions are used for the spatial aggregation, any custom made function can be used.
 
 # Example - *A simple land cover classification of Wageningen from Landsat 8 data*
 
-Using the same data as you used in the [exercise](http://geoscripting-wur.github.io/IntroToRaster/#exercise-design-a-pre-processing-chain-to-assess-change-in-ndvi-over-time) of the raster lesson.
+In the example below we will do a simple supervised land cover classification of Wageningen. The example uses the same data as you used in the [exercise](http://geoscripting-wur.github.io/IntroToRaster/#exercise-design-a-pre-processing-chain-to-assess-change-in-ndvi-over-time) of the raster lesson.
+
+Step by step we will:
+
+- Download the Landsat 8 data of Wageningen
+- Download and prepare administrative boundary data of the Netherlands
+- Download Water area data of Wageningen
+- Mask the data to match the boundaries of the city
+- 
 
 
 ```{r, eval=FALSE}
@@ -99,11 +112,10 @@ class(nlCity)
 head(nlCity@data)
 ```
 
-Seems that the municipality names are in the `NAME_2` column. So that we can subset the SpatialPolygonsDataFrame to the city of Wageningen alone.
+It seems that the municipality names are in the `NAME_2` column. So that we can subset the SpatialPolygonsDataFrame to the city of Wageningen alone.
 
 
 ```{r}
-library(rgdal)
 wagContour <- nlCity[nlCity$NAME_2 == 'Wageningen',]
 ```
 
@@ -112,15 +124,24 @@ We can use the resulting `wagContour` object, to mask the values out of Wagening
 > **Question:** Would you rather reproject a raster or a vector layer? Give two reasons.
 
 ```{r}
+# Load rgdal library (needed to reproject data)
+library(rgdal)
 wagContourUTM <- spTransform(wagContour, CRS(proj4string(wagLandsat)))
 ```
 
-Now that the two objects are in the same CRS, we can do the masking and visualize the result.
+Now that the two objects are in the same CRS, we can do the masking and visualize the result. Let's first crop and then mask, to see the difference.
 
-```{r, fig.align='center'}
+```{r, fig.align='center', fig.show='hold', fig.cap='Example of crop and mask'}
+wagLandsatCrop <- crop(wagLandsat, wagContourUTM)
 wagLandsatSub <- mask(wagLandsat, wagContourUTM)
-plotRGB(wagLandsatSub, 5, 4, 3)
+
+# Set graphical parameters (one row and two columns)
+opar <- par(mfrow=c(1,2))
+plotRGB(wagLandsatCrop, 5, 4, 3, main = 'Crop()')
+plotRGB(wagLandsatSub, 5, 4, 3, main = 'Mask()')
 plot(wagContourUTM, add = TRUE)
+# Reset graphical parameters
+par(opar)
 ```
 
 We also have a water mask of Wageningen in vector format. Let's download it and also reproject it to the CRS of the Landsat data.
@@ -139,11 +160,17 @@ water <- readOGR('data/Water.shp', layer = 'Water')
 waterUTM <- spTransform(water, CRS(proj4string(wagLandsat)))
 ```
 
-```{r}
+```{r, fig.align='center'}
 wagLandsatSubW <- mask(wagLandsatSub, mask = waterUTM, inverse = TRUE)
 plotRGB(wagLandsatSubW, 5, 4, 3)
 plot(waterUTM, col = 'blue', add = TRUE)
 ```
+
+## Build a calibration dataset in Google Earth
+
+Open Google Earth, and 
+
+
 
 ## Extract raster values along a transect
 
@@ -234,3 +261,5 @@ par(opar)
 # Exercise
 
 [product details](https://lpdaac.usgs.gov/products/modis_products_table/mod13a3)
+
+What about provinces (see `?aggregate()`)
