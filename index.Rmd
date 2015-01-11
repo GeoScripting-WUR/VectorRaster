@@ -51,7 +51,7 @@ There is one function that allows to convert a object in vector for to a raster 
 
 Mask using a single feature/polygon of a bigger SpatialPolygonDataFrame.
 
-Note the `inverse=` argument of `mask()`, which allows to mask the inverse of the area covered by the features.
+Note the `inverse=` argument of `mask()`, which allows to mask the inverse of the area covered by the features. We will use this feature of mask later in the tutorial to exclude water areas of a rater defined in an independent SpatialPolygons* object.
  
 # Extract
 
@@ -99,23 +99,36 @@ class(nlCity)
 head(nlCity@data)
 ```
 
-Seems that the municipality names are in the `NAME_2` column.
+Seems that the municipality names are in the `NAME_2` column. So that we can subset the SpatialPolygonsDataFrame to the city of Wageningen alone.
+
 
 ```{r}
 library(rgdal)
 wagContour <- nlCity[nlCity$NAME_2 == 'Wageningen',]
+```
+
+We can use the resulting `wagContour` object, to mask the values out of Wageningen, but first, since the two objects are in different coordinate systems, we need to reproject one to the projection of the other.
+
+> **Question:** Would you rather reproject a raster or a vector layer? Give two reasons.
+
+```{r}
 wagContourUTM <- spTransform(wagContour, CRS(proj4string(wagLandsat)))
+```
+
+Now that the two objects are in the same CRS, we can do the masking and visualize the result.
+
+```{r, fig.align='center'}
 wagLandsatSub <- mask(wagLandsat, wagContourUTM)
 plotRGB(wagLandsatSub, 5, 4, 3)
 plot(wagContourUTM, add = TRUE)
 ```
 
-We also have a water mask of Wageningen in vector format.
+We also have a water mask of Wageningen in vector format. Let's download it and also reproject it to the CRS of the Landsat data.
 
 ```{r, eval=FALSE}
 download.file(url = 'https://github.com/GeoScripting-WUR/VectorRaster/raw/gh-pages/data/wageningenWater.zip', destfile = 'wageningenWater.zip', method = 'auto')
 unzip('wageningenWater.zip')
-# SQLITE does not work well, need to change that 
+# The 
 ogrListLayers('waterWageningen.sqlite')
 water <- readOGR('', layer = 'waterwageningen')
 waterUTM <- spTransform(water, CRS(proj4string(wagLandsat)))
@@ -131,6 +144,92 @@ wagLandsatSubW <- mask(wagLandsatSub, mask = waterUTM, inverse = TRUE)
 plotRGB(wagLandsatSubW, 5, 4, 3)
 plot(waterUTM, col = 'blue', add = TRUE)
 ```
+
+## Extract raster values along a transect
+
+Another use of the `extract()` function can be to visualize or analyse data along transects.
+In the following example, we will run a transect across Belgium and visualize the change in elevation.
+
+Let's first download the elevation data of Belgium, using the `getData()` function of the raster package.
+
+```{r}
+bel <- getData('alt', country='BEL', mask=TRUE) ## SRTM 90m height data
+# Display metadata
+bel
+```
+
+`bel` is a RasterLayer
+
+We can start by visualizing the data.
+
+```{r, fig.align='center'}
+plot(bel)
+```
+
+Everything seems correct.
+
+We want to look at a transect, which we can draw by hand by selecting two points by clicking. The `drawLine()` function will help us do that.
+
+
+```{r, eval=FALSE}
+line <- drawLine()
+```
+
+```{r, echo=FALSE, fig.align='center'}
+line <- readRDS('data/line.rds')
+plot(bel)
+plot(line, col = 'red', add = TRUE)
+```
+
+Then the elevation values can simply be extracted using `extract()`. Note the use of the `along.with=` argument which ensures that the samples remain in order along the segment. 
+
+```{r}
+alt <- extract(bel, line, along = TRUE)
+```
+
+We can already plot the result as follows, but the x axis does not really provide any indication of distance.
+
+```{r, fig.align='center'}
+plot(alt[[1]])
+```
+
+In order to make an index for the x axis, we can calculate the distance between the two extremities of the transect, using `distHaversine()` from the geosphere package.
+
+```{r}
+library(geosphere)
+# Calculate great circle distance between the two ends of the line
+dist <- distHaversine(coordinates(line)[[1]][[1]][1,], coordinates(line)[[1]][[1]][2,])
+# Format a vector for use as x axis index
+distanceVector <- seq(0, dist, along.with = alt[[1]])
+```
+
+> **Question**: Why can't we simply use the `LineLength()` function from the sp package?
+
+> Hint, look at the CRS in which we are working, and at the help page of the `distHaversine()` function
+
+Note that there is a small approximation on the position of the line and the distances between the samples as the real shortest path between two points is not a straight line in lat-long.
+We could also have:
+
+- Projected the raster and the line to a projected coordinate system, or
+- Made a true greatCircle line using `greatCircle()` from the sp package and extracted the elevation values from it.
+
+Let's now visualize the final output.
+
+```{r, fig.align='center', fig.show='hold'}
+# Visualize the output
+# Set graphical parameters (grid with 2 rows and 1 column)
+opar <- par(mfrow = c(2,1))
+plot(bel, main = 'Altitude (m)')
+plot(line, add = TRUE)
+plot(distanceVector/1000, alt[[1]], type = 'l',
+     main = 'Altitude transect Belgium',
+     xlab = 'Distance (Km)',
+     ylab = 'Altitude (m)',
+     las = 1)
+# Reset graphical parameters to default
+par(opar)
+```
+
 
 # Exercise
 
