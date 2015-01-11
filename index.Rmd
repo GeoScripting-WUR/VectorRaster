@@ -166,11 +166,49 @@ plotRGB(wagLandsatSubW, 5, 4, 3)
 plot(waterUTM, col = 'blue', add = TRUE)
 ```
 
+For the rest of the example, we'll use the `wagLandsatCrop` object, for I have a few doubts about the spatial accuracy of the two vector layers we used in the masking steps.
+
 ## Build a calibration dataset in Google Earth
 
-Open Google Earth, and 
+Open Google Earth, in places, right click on ''Temporary Places'' and select ''Add - Folder''; name it appropriately. Add new placemaks to that folder, and put the interpreted land cover in the description field. Keep it to a few classes, such as agric, forest, water, urban. I also added flood, to categorize the flood plain nearby the river. When you are done, save the file.
+
+Load the newly created kml file using the `readOGR()` function. The object should be a SpatialPointsDataFrame and the information created is stored in the description column of the data frame.
+
+```{r, eval=FALSE}
+# Change to the correct file path and layer name
+samples <- readOGR('sampleLongLat.kml', layer = 'sampleLongLat')
+```
+
+```{r, echo = FALSE}
+samples <- readOGR('data/sampleLongLat2.kml', layer = 'sampleLongLat')
+```
+
+```{r}
+samplesUTM <- spTransform(samples, CRS(proj4string(wagLandsatCrop)))
+samplesUTM@coords <- coordinates(samplesUTM)[,-3]
+calib <- extract(wagLandsatCrop, samplesUTM, df=TRUE)
+calib2 <- cbind(samplesUTM$description, calib)
+colnames(calib2)[1] <- 'lc'
+str(calib2)
+```
+
+Don't focus too much on the algorithm used, the import part for this tutorial is the data extraction and the following data frame manipulation.
 
 
+```{r}
+library(randomForest)
+model <- randomForest(lc ~ band1 + band2 + band3 + band4 + band5 + band6 + band7, data = calib2)
+lcMap <- predict(wagLandsatCrop, model = model)
+```
+
+Let's visualize the output. The function `levelplot()` from the rasterVis package is a convenient function to plot categorical raster data.
+
+```{r, fig.align='center'}
+library(rasterVis)
+levelplot(lcMap, col.regions = c('green', 'brown', 'darkgreen', 'lightgreen', 'grey', 'blue'))
+```
+
+OK, we've seen better land cover maps of Wageningen, but given the amount of training data we used, it is not too bad. A larger calibration dataset would certainly result in a better accuracy.
 
 ## Extract raster values along a transect
 
