@@ -169,6 +169,7 @@ plot(waterUTM, col = 'blue', add = TRUE)
 For the rest of the example, we'll use the `wagLandsatCrop` object, for I have a few doubts about the spatial accuracy of the two vector layers we used in the masking steps.
 
 ## Build a calibration dataset in Google Earth
+Below we'll see how we can deal with a calibration dataset with R. It involves working with SpatialPointsDataFrames, extracting reflectance data for the corresponding calibration samples, manipulating data frames and building a model that can be used to predict land cover.
 
 Open Google Earth, in places, right click on ''Temporary Places'' and select ''Add - Folder''; name it appropriately. Add new placemaks to that folder, and put the interpreted land cover in the description field. Keep it to a few classes, such as agric, forest, water, urban. I also added flood, to categorize the flood plain nearby the river. When you are done, save the file.
 
@@ -183,21 +184,34 @@ samples <- readOGR('sampleLongLat.kml', layer = 'sampleLongLat')
 samples <- readOGR('data/sampleLongLat2.kml', layer = 'sampleLongLat')
 ```
 
+We now need to extract the surface reflectance values of the corresponding samples. But first the data once again need to be re-projected to the CRS of the Landsat data.
+
 ```{r}
+# Re-project SpatialPointsDataFrame
 samplesUTM <- spTransform(samples, CRS(proj4string(wagLandsatCrop)))
+# The extract function does not understand why the object would have 3 coord columns, so we need to edit this field
 samplesUTM@coords <- coordinates(samplesUTM)[,-3]
+# Extract the surface reflectance 
 calib <- extract(wagLandsatCrop, samplesUTM, df=TRUE)
+# Combine the newly created dataframe to the description column of the calibration dataset
 calib2 <- cbind(samplesUTM$description, calib)
+# Change the name of the first column, for convienience
 colnames(calib2)[1] <- 'lc'
+# Inspect the structure of the dataframe
 str(calib2)
 ```
 
-Don't focus too much on the algorithm used, the import part for this tutorial is the data extraction and the following data frame manipulation.
+Note the use of `df = TRUE` in the `extract()` call, so that we get a data frame in return. Data frame are the most common class to work with all types of model, such as linear models (`lm()`) or random forest models as we use later.
+
+Now we will calibrate a random forest model using the extracted data frame.
+Do not focus too much on the algorithm used, the import part for this tutorial is the data extraction and the following data frame manipulation. More details will come about random forest classifiers tomorrow.
 
 
 ```{r}
 library(randomForest)
+# Calibrate model
 model <- randomForest(lc ~ band1 + band2 + band3 + band4 + band5 + band6 + band7, data = calib2)
+# Use the model to predict land cover
 lcMap <- predict(wagLandsatCrop, model = model)
 ```
 
