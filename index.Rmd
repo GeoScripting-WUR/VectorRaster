@@ -326,7 +326,44 @@ par(opar)
 
 # Exercise
 
-Coming soon ...
+## Background
+Last week end, on a rainy Saturday afternoon in Wageningen, my friend and I decided to go for a coffee. We had met at the market, while shopping for fresh vegetable, when we thought of moving to a warmer and drier place to catch up a bit since last time we had met a month ago. We were both sitting in the cafe; me by the window and he, sitting on the opposite side of the table, facing the rest of the establishment. The chattering of the crown behing me, mixed with the clinking of glasses and the hissing sound of the espresso machine releasing its vapour was giving the feeling of an old movie to the place. The rain beating the window was only adding to this atmosphere. As we were discussing, I was contemplating the rain drops rolling down the glass, on the other side of the window; gaining speed and chasing each others on the smooth surface, then being pushed out of their trajectory by a sudden burst of wind, and gaining momentum again. He suddently exclaimed:
+
+*'Did you know that Hoenderloo is the greenest city in the Netherlands?'*
+  
+I was shocked, not only this had absolutely nothing to do with our conversation, but also I had always thought that Wageningen was the greenest city in The Netherlands. At least that's what I wanted to believe. So that I responded:
+  
+*'No way man, it can't be greener than Wageningen. Wageningen is way greener than Hoenderloo.'* Insisting on the "way" and pronouncing Hoenderloo in an english way.
+  
+*'Are you sure?'*
+  
+*'Definitely!'* I had no idea.
+  
+To what he responded, noticing my bluffing face:
+  
+*'Haha, if only we could check.'*
+  
+''If only ...'', these two words kept bouncing in my mind. So much that I could not follow the rest of our conversation. Whether he was talking about the influence of china on Wageningen architecture, the maximum speed of a Leopard chasing a Gazelle, his last trip to Bolivia or the true origin of the french fries name, I do not remember. I was obsessed by this thought; how could I find which was the greenest place? He did most of the talking, while my mind was trying to organize the ideas and sort preliminary hypotheses. When suddently he got my attention again:
+  
+*'Hey let's go!'*
+  
+The rain had stopped. We got up, paid our coffees to the counter, exited the cafe and each started walking in a different direction. I had almost reached the end of the street when I turned around and shouted in his direction.
+  
+*'I think we can check!'*
+  
+*'Check what?'*
+  
+I gave him a sign with my arm indicating that it didn't matter and kept walking home.
+
+## Exercise
+
+Please help me find out which city in the Netherlands is the greenest. You can use the MODIS NDVI data available [here](https://github.com/GeoScripting-WUR/VectorRaster/raw/gh-pages/data/MODIS.zip).
+
+- Find the greenest city
+	- In January
+	- In August
+	- On average over the year
+- Make at least one map to visualize the results
 
 [product details](https://lpdaac.usgs.gov/products/modis_products_table/mod13a3)
 
