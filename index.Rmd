@@ -312,6 +312,8 @@ par(opar)
 
 # Exercise
 
+Coming soon ...
+
 [product details](https://lpdaac.usgs.gov/products/modis_products_table/mod13a3)
 
 What about provinces (see `?aggregate()`)
