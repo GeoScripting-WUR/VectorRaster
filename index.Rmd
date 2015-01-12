@@ -207,7 +207,7 @@ samplesUTM@coords <- coordinates(samplesUTM)[,-3]
 # Extract the surface reflectance 
 calib <- extract(wagLandsatCrop, samplesUTM, df=TRUE)
 # Combine the newly created dataframe to the description column of the calibration dataset
-calib2 <- cbind(samplesUTM$description, calib)
+calib2 <- cbind(samplesUTM$Description, calib)
 # Change the name of the first column, for convienience
 colnames(calib2)[1] <- 'lc'
 # Inspect the structure of the dataframe
@@ -300,8 +300,8 @@ distanceVector <- seq(0, dist, along.with = alt[[1]])
 
 > Hint, look at the CRS in which we are working, and at the help page of the `distHaversine()` function
 
-Note that there is a small approximation on the position of the line and the distances between the samples as the real shortest path between two points is not a straight line in lat-long, while the distance we just calculated is the shortest path.
-We could also have:
+Note that there is a small approximation on the position of the line and the distances between the samples as the real shortest path between two points is not a straight line in lat-long, while the distance we just calculated is the shortest path. For short distances, as in the example, this is acceptable.
+Otherwise, we could also have:
 
 - Projected the raster and the line to a projected coordinate system, or
 - Made a true greatCircle line using `greatCircle()` from the sp package and extracted the elevation values from it.
@@ -327,7 +327,7 @@ par(opar)
 # Exercise
 
 ## Background
-Last week end, on a rainy Saturday afternoon in Wageningen, my friend and I decided to go for a coffee. We had met at the market, while shopping for fresh vegetable, when we thought of moving to a warmer and drier place to catch up a bit since last time we had met a month ago. We were both sitting in the cafe; me by the window and he, sitting on the opposite side of the table, facing the rest of the establishment. The chattering of the crown behing me, mixed with the clinking of glasses and the hissing sound of the espresso machine releasing its vapour was giving the feeling of an old movie to the place. The rain beating the window was only adding to this atmosphere. As we were discussing, I was contemplating the rain drops rolling down the glass, on the other side of the window; gaining speed and chasing each others on the smooth surface, then being pushed out of their trajectory by a sudden burst of wind, and gaining momentum again. He suddently exclaimed:
+Last week end, on a rainy Saturday afternoon in Wageningen, my friend and I decided to go for a coffee. We had met at the market, while shopping for fresh vegetable, when we thought of moving to a warmer and drier place to catch up a bit since last time we had met a month ago. We were both sitting in the cafe; me by the window and he, sitting on the opposite side of the table, facing the rest of the busy room. The chattering of the crown behind me, mixed with the clinking of glasses and the hissing sound of the espresso machine releasing its vapour was giving the feeling of an old movie to the place. The rain beating the window was only adding to this atmosphere. As we were discussing, I was contemplating the rain drops rolling down the glass, on the other side of the window; gaining speed and chasing each others on the smooth surface, then being pushed out of their trajectory by a sudden burst of wind, and gaining momentum again. He suddently exclaimed:
 
 *'Did you know that Hoenderloo is the greenest city in the Netherlands?'*
   
@@ -343,7 +343,7 @@ To what he responded, noticing my bluffing face:
   
 *'Haha, if only we could check.'*
   
-''If only ...'', these two words kept bouncing in my mind. So much that I could not follow the rest of our conversation. Whether he was talking about the influence of china on Wageningen architecture, the maximum speed of a Leopard chasing a Gazelle, his last trip to Bolivia or the true origin of the french fries name, I do not remember. I was obsessed by this thought; how could I find which was the greenest place? He did most of the talking, while my mind was trying to organize the ideas and sort preliminary hypotheses. When suddently he got my attention again:
+''If only ...'', these two words kept bouncing in my mind. So much that I could not follow the rest of our conversation. Whether he was talking about the influence of China on Wageningen architecture, the maximum speed of a Leopard chasing a Gazelle, his last trip to Bolivia or the true origin of the french fries name, I do not remember. I was obsessed by this thought; how could I find which was the greenest place? He did most of the talking, while my mind was trying to organize the ideas and sort preliminary hypotheses. When suddently he got my attention again:
   
 *'Hey let's go!'*
   
