@@ -10,21 +10,17 @@ output:
 
 # [WUR Geoscripting](https://geoscripting-wur.github.io/) ![WUR logo](http://www.wageningenur.nl/upload/f9a0b5f2-15c5-4b84-9e14-20ef02f5e265_wur-logo.png)
 
-
-
 # Today
 
-- Morning: Self-study
+- Morning: Self-study & answer the questions within the lesson
 - 1330-1430: Questions and clarifications
 - Rest of the afternoon: Do/finalise the exercise.
 
 # Today's learning objectives
+
 At the end of the lecture, you should be able to
-
-
 * Have an overview of what can be achived when combining raster and vector data in R
 * Be able to extract raster data using vector data
-
 
 # Introduction
 
