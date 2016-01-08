@@ -1,19 +1,21 @@
 ---
-title: "Raster Vector integration in R"
-author: "Loïc Dutrieux"
+author: "Loïc Dutrieux and Jan Verbesselt"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
-  html_document:
-    number_sections: yes
+  knitrBootstrap::bootstrap_document:
+    title: "Raster Vector integration in R"
     theme: cosmo
-    toc: yes
-    toc_depth: 4
+    menu: FALSE
 ---
 
-# Today (12/01/2015)
+# [WUR Geoscripting](https://geoscripting-wur.github.io/) ![WUR logo](http://www.wageningenur.nl/upload/f9a0b5f2-15c5-4b84-9e14-20ef02f5e265_wur-logo.png)
 
-- Morning: Self-study from home or PC38 - Go through the following tutorial
-- 1330-1430: Questions and clarifications with Loïc
+
+
+# Today
+
+- Morning: Self-study
+- 1330-1430: Questions and clarifications
 - Rest of the afternoon: Do/finalise the exercise.
 
 # Today's learning objectives
@@ -115,7 +117,7 @@ plotRGB(wagLandsat, 5, 4, 3)
 
 ```{r}
 # Download municipality boundaries
-nlCity <- getData('GADM',country='NLD', level=3)
+nlCity <- raster::getData('GADM',country='NLD', level=2) ## level 3 gives an error!!!
 class(nlCity)
 # Investigate the structure of the object
 head(nlCity@data)
@@ -125,6 +127,7 @@ It seems that the municipality names are in the `NAME_2` column. So that we can 
 
 
 ```{r}
+nlCity@data <- nlCity@data[!is.na(nlCity$NAME_2),] ## trick to remove rows with NA
 wagContour <- nlCity[nlCity$NAME_2 == 'Wageningen',]
 ```
 
@@ -226,6 +229,9 @@ Do not focus too much on the algorithm used, the important part for this tutoria
 
 
 ```{r}
+if(!require(randomForest)) {
+  install.packages("randomForest")
+}
 library(randomForest)
 # Calibrate model
 model <- randomForest(lc ~ band1 + band2 + band3 + band4 + band5 + band6 + band7, data = calib2)
@@ -294,6 +300,9 @@ plot(alt[[1]], type = 'l')
 In order to make an index for the x axis, we can calculate the distance between the two extremities of the transect, using `distHaversine()` from the geosphere package.
 
 ```{r}
+if(!require(geosphere)) {
+  install.packages("geosphere")
+}
 library(geosphere)
 # Calculate great circle distance between the two ends of the line
 dist <- distHaversine(coordinates(line)[[1]][[1]][1,], coordinates(line)[[1]][[1]][2,])
