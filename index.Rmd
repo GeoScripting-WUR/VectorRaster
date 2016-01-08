@@ -375,6 +375,6 @@ Please help me find out which city in the Netherlands is the greenest. You can u
 	- On average over the year
 - Make at least one map to visualize the results
 
-[product details](https://lpdaac.usgs.gov/products/modis_products_table/mod13a3)
+[product details](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod13a3)
 
 What about provinces (see `?aggregate()`)
