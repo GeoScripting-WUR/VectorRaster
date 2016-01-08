@@ -81,7 +81,7 @@ Step by step we will:
 - Export the Google Earth file and import it in R
 - Extract the surface reflectance values for the calibration pixels
 - Calibrate a model with the classifier
-- Predict the land cover on the Landsat image
+- Predict the land cover using a Landsat image
 
 ### Prepare the data
 
@@ -113,7 +113,7 @@ plotRGB(wagLandsat, 5, 4, 3)
 
 ```{r}
 # Download municipality boundaries
-nlCity <- raster::getData('GADM',country='NLD', level=2) ## level 3 gives an error!!!
+nlCity <- raster::getData('GADM',country='NLD', level=2)
 class(nlCity)
 # Investigate the structure of the object
 head(nlCity@data)
@@ -123,15 +123,15 @@ It seems that the municipality names are in the `NAME_2` column. So that we can 
 
 
 ```{r}
-nlCity@data <- nlCity@data[!is.na(nlCity$NAME_2),] ## trick to remove rows with NA
+nlCity@data <- nlCity@data[!is.na(nlCity$NAME_2),] ## remove rows with NA
 wagContour <- nlCity[nlCity$NAME_2 == 'Wageningen',]
 ```
 
 We can use the resulting `wagContour` object, to mask the values out of Wageningen, but first, since the two objects are in different coordinate systems, we need to reproject one to the projection of the other.
 
-> **Question:** Would you rather reproject a raster or a vector layer? Give two reasons.
+> **Question:** Would you rather reproject a raster or a vector layer? Give two reasons why you would choose to reproject a raster or vector.
 
-```{r}
+```{r, message=FALSE}
 # Load rgdal library (needed to reproject data)
 library(rgdal)
 wagContourUTM <- spTransform(wagContour, CRS(proj4string(wagLandsat)))
@@ -147,7 +147,7 @@ wagLandsatSub <- mask(wagLandsat, wagContourUTM)
 opar <- par(mfrow=c(1,2))
 plotRGB(wagLandsatCrop, 5, 4, 3, main = 'Crop()')
 plotRGB(wagLandsatSub, 5, 4, 3, main = 'Mask()')
-plot(wagContourUTM, add = TRUE)
+plot(wagContourUTM, add = TRUE, border = "green", lwd = 3)
 # Reset graphical parameters
 par(opar)
 ```
@@ -170,16 +170,16 @@ water <- readOGR('data/Water.shp', layer = 'Water')
 waterUTM <- spTransform(water, CRS(proj4string(wagLandsat)))
 ```
 
-Note the use of `inverse = TRUE` in the code below, to mask the pixels the intersect with the features of the vector object.
+Note the use of `inverse = TRUE` in the code below, to *mask* the pixels the intersect with the features of the vector object.
 
 
 ```{r, fig.align='center'}
 wagLandsatSubW <- mask(wagLandsatSub, mask = waterUTM, inverse = TRUE)
 plotRGB(wagLandsatSubW, 5, 4, 3)
-plot(waterUTM, col = 'blue', add = TRUE)
+plot(waterUTM, col = 'blue', add = TRUE, border = 'blue', lwd = 2)
 ```
 
-For the rest of the example, we'll use the `wagLandsatCrop` object, for I have a few doubts about the spatial accuracy of the two vector layers we used in the masking steps. You can check for yourself by converting them to KML and opening them in Google Earth.
+For the rest of the example, we'll use the `wagLandsatCrop` object, for I have a few doubts about the spatial accuracy of the two vector layers we used in the masking steps. You can check for yourself by converting them to KML and opening them in Google Earth. (Let us know during the lesson, what do you think? any solutions?)
 
 ### Build a calibration dataset in Google Earth
 Below we'll see how we can deal with a calibration dataset with R, for calibrating a classifier. It involves working with SpatialPointsDataFrames, extracting reflectance data for the corresponding calibration samples, manipulating data frames and building a model that can be used to predict land cover. But first we need to build the calibration dataset (ground truth), and for that we will use Google Earth.
