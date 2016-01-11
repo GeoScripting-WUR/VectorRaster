@@ -209,7 +209,7 @@ samplesUTM <- spTransform(samples, CRS(proj4string(wagLandsatCrop)))
 # The extract function does not understand why the object would have 3 coord columns, so we need to edit this field
 samplesUTM@coords <- coordinates(samplesUTM)[,-3]
 # Extract the surface reflectance 
-calib <- extract(wagLandsatCrop, samplesUTM, df=TRUE)
+calib <- extract(wagLandsatCrop, samplesUTM, df=TRUE) ## df=TRUE i.e. return as a data.frame
 # Combine the newly created dataframe to the description column of the calibration dataset
 calib2 <- cbind(samplesUTM$Description, calib)
 # Change the name of the first column, for convienience
@@ -218,7 +218,7 @@ colnames(calib2)[1] <- 'lc'
 str(calib2)
 ```
 
-> Note the use of `df = TRUE` in the `extract()` call, so that we get a data frame in return. Data frame are the most common class to work with all types of model, such as linear models (`lm()`) or random forest models as we use later.
+> Note the use of `df = TRUE` in the `extract()` call, so that we get a data frame in return. Data frame are the most common class to work with all types of models, such as linear models (`lm()`) or random forest models as we use later.
 
 Now we will calibrate a random forest model using the extracted data frame.
 Do not focus too much on the algorithm used, the important part for this tutorial is the data extraction and the following data frame manipulation. More details will come about random forest classifiers tomorrow.
@@ -290,7 +290,7 @@ alt <- extract(bel, line, along = TRUE)
 We can already plot the result as follows, but the x axis does not really provide any indication of distance.
 
 ```{r, fig.align='center'}
-plot(alt[[1]], type = 'l')
+plot(alt[[1]], type = 'l', ylab = "Altitude (m)")
 ```
 
 In order to make an index for the x axis, we can calculate the distance between the two extremities of the transect, using `distHaversine()` from the geosphere package.
@@ -302,7 +302,7 @@ if(!require(geosphere)) {
 library(geosphere)
 # Calculate great circle distance between the two ends of the line
 dist <- distHaversine(coordinates(line)[[1]][[1]][1,], coordinates(line)[[1]][[1]][2,])
-# Format a vector for use as x axis index
+# Format an array for use as x axis index with the same length as the alt[[1]] array
 distanceVector <- seq(0, dist, along.with = alt[[1]])
 ```
 
@@ -320,8 +320,6 @@ Let's now visualize the final output.
 
 ```{r, fig.align='center', fig.show='hold'}
 # Visualize the output
-# Set graphical parameters (grid with 2 rows and 1 column)
-opar <- par(mfrow = c(2,1))
 plot(bel, main = 'Altitude (m)')
 plot(line, add = TRUE)
 plot(distanceVector/1000, alt[[1]], type = 'l',
@@ -329,8 +327,7 @@ plot(distanceVector/1000, alt[[1]], type = 'l',
      xlab = 'Distance (Km)',
      ylab = 'Altitude (m)',
      las = 1)
-# Reset graphical parameters to default
-par(opar)
+
 ```
 
 
@@ -375,6 +372,6 @@ Please help me find out which city in the Netherlands is the greenest. You can u
 	- On average over the year
 - Make at least one map to visualize the results
 
-[product details](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod13a3)
+[Click here for more information about MODIS data used (i.e. MOD13A3)](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod13a3)
 
-What about provinces (see `?aggregate()`)
+Bonus: What about provinces (see `?aggregate()`)?
