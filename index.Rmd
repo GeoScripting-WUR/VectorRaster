@@ -406,4 +406,4 @@ Please help me find out which city in the Netherlands is the greenest. You can u
 
 [Click here for more information about MODIS data used (i.e. MOD13A3)](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod13a3)
 
-Bonus: What about provinces (see `?sp::aggregate`, or change the level as follows `getData('GADM',country='NLD', level=1)`)? Which province is the greenest in January?
+Bonus: What about provinces (see `?raster::aggregate`). Which province is the greenest in January?
