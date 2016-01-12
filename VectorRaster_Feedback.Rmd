@@ -1,0 +1,70 @@
+---
+title: "Raster Vector Lesson"
+author: "Jan Verbesselt"
+date: "12 Jan 2016"
+output: slidy_presentation
+---
+
+# Q&A forum
+
+Excellent to see some action!
+  
+  - are there any open questions to be solved?
+    
+# General comments
+
+[Ubuntu Desktop versus server](http://www.ubuntu.com/download/)
+
+Feedback via Blackboard
+  
+  - Did you see the feedback on Ex 1, 2 and 3?
+        
+# Feedback previous lessons
+
+Start your script, and define a e.g. in and out file name and path.
+Do not change the working directory within your script or certainly not within your function
+
+Example:
+
+```{r, eval = FALSE}
+# set input folder or file
+# or ask for input folder or file
+ifolder <- "/path/"
+ofolder <- "/path/"
+```
+
+More info via this question: "[R user input?](http://stackoverflow.com/questions/5974967/what-is-the-correct-way-to-ask-for-user-input-in-an-r-program)"
+
+# Solution of Wednesday's shell script
+
+```{r, engine='bash', results='hide', eval =FALSE}
+#!/bin/bash
+cd ../data
+fnin="ndvi.tif"
+fnout="ndvi_latlong_60.tif"
+fntemp="temp.tif"
+fnpng="ndvilatlong.png"
+echo "resample the inputfile: $fnin"
+gdalwarp -tr 60 60 -r cubic $fnin $fntemp
+echo "reproject to lat/long: $fnout"
+gdalwarp -t_srs EPSG:4326 $fntemp $fnout
+rm $fntemp
+gdal_translate -of png $fnout $fnpng
+echo "The output file: $fnout"
+```
+
+# Tutorial of today
+
+Questions: 
+
+Would you rather reproject a raster or a vector layer?
+    
+Why can't we simply use the LineLength() function from the sp package?
+    
+> Hint, look at the CRS in which we are working, and at the help page of the distHaversine() function. Also the see distVincentyEllipsoid() function. Does this one provide a more accurate distance?
+
+
+
+
+
+
