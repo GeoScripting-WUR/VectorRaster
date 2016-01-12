@@ -400,7 +400,7 @@ Please help me find out which "municipality" in the Netherlands is the greenest.
 
 Hint: use `nlMunicipality <- getData('GADM',country='NLD', level=2)`
 
-- Find the greenest city
+- Find the greenest Municipality:
 	- In January
 	- In August
 	- On average over the year
