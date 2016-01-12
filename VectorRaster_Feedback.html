@@ -77,12 +77,7 @@ ofolder &lt;-<span class="st"> &quot;/path/&quot;</span></code></pre>
 <span class="ot">fntemp=</span><span class="st">&quot;temp.tif&quot;</span>
 <span class="ot">fnpng=</span><span class="st">&quot;ndvilatlong.png&quot;</span>
 <span class="kw">echo</span> <span class="st">&quot;resample the inputfile: </span><span class="ot">$fnin</span><span class="st">&quot;</span>
-<span class="kw">gdalwarp</span> -tr 60 60 -r cubic <span class="ot">$fnin</span> <span class="ot">$fntemp</span>
-<span class="kw">echo</span> <span class="st">&quot;reproject to lat/long: </span><span class="ot">$fnout</span><span class="st">&quot;</span>
-<span class="kw">gdalwarp</span> -t_srs EPSG:4326 <span class="ot">$fntemp</span> <span class="ot">$fnout</span>
-<span class="kw">rm</span> <span class="ot">$fntemp</span>
-<span class="kw">gdal_translate</span> -of png <span class="ot">$fnout</span> <span class="ot">$fnpng</span>
-<span class="kw">echo</span> <span class="st">&quot;The output file: </span><span class="ot">$fnout</span><span class="st">&quot;</span></code></pre>
+<span class="co">####</span></code></pre>
 <blockquote>
 <p>What is the benefit of the Shell script? Why would you use it?</p>
 </blockquote>

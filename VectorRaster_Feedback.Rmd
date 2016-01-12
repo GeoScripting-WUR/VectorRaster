@@ -48,12 +48,7 @@ fnout="ndvi_latlong_60.tif"
 fntemp="temp.tif"
 fnpng="ndvilatlong.png"
 echo "resample the inputfile: $fnin"
-gdalwarp -tr 60 60 -r cubic $fnin $fntemp
-echo "reproject to lat/long: $fnout"
-gdalwarp -t_srs EPSG:4326 $fntemp $fnout
-rm $fntemp
-gdal_translate -of png $fnout $fnpng
-echo "The output file: $fnout"
+####
 ```
 
 > What is the benefit of the Shell script? Why would you use it?
