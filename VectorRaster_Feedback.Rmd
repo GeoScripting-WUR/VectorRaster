@@ -35,6 +35,8 @@ ofolder <- "/path/"
 
 More info via this question: "[R user input?](http://stackoverflow.com/questions/5974967/what-is-the-correct-way-to-ask-for-user-input-in-an-r-program)"
 
+> [R examples](http://www.rexamples.com/4/Reading%20user%20input)
+
 # Solution of Wednesday's shell script
 
 ```{r, engine='bash', results='hide', eval =FALSE}
@@ -52,6 +54,8 @@ rm $fntemp
 gdal_translate -of png $fnout $fnpng
 echo "The output file: $fnout"
 ```
+
+> What is the benefit of the Shell script? Why would you use it?
 
 # Tutorial of today
 
