@@ -68,7 +68,9 @@ Why can't we simply use the LineLength() function from the sp package?
     
 > Hint, look at the CRS in which we are working, and at the help page of the distHaversine() function. Also the see distVincentyEllipsoid() function. Does this one provide a more accurate distance?
 
+# Todays lesson
 
+[Vector & Raster](http://geoscripting-wur.github.io/VectorRaster/)
 
 
 
