@@ -10,6 +10,7 @@ output: slidy_presentation
 Excellent to see some action!
   
   - are there any open questions to be solved?
+  - [a recent question](http://www.geo-informatie.nl/courses/grs33806/question2answer/index.php?qa=60&qa_1=cannot-bind-2-lines-together)
     
 # General comments
 
