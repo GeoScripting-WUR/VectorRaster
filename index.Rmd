@@ -396,7 +396,9 @@ I gave him a sign with my arm indicating that it didn't matter and kept walking 
 
 ## Exercise
 
-Please help me find out which city in the Netherlands is the greenest. You can use the MODIS NDVI data available [here](https://github.com/GeoScripting-WUR/VectorRaster/raw/gh-pages/data/MODIS.zip).
+Please help me find out which "municipality" in the Netherlands is the greenest. You can use the MODIS NDVI data available [here](https://github.com/GeoScripting-WUR/VectorRaster/raw/gh-pages/data/MODIS.zip).
+
+Hint: use `nlMunicipality <- getData('GADM',country='NLD', level=2)`
 
 - Find the greenest city
 	- In January
