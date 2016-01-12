@@ -346,7 +346,7 @@ sRandomBel <- sampleRandom(bel, na.rm=TRUE, sp=TRUE, size = 40)
 ## Create a data.frame containing relevant info
 sRandomData <- data.frame(altitude = sRandomBel@data[[1]],
                           latitude = sRandomBel@coords[,'y'],
-                          longitude = sRandomBel@coords[,'y'])
+                          longitude = sRandomBel@coords[,'x'])
 ```
 
 ```{r, fig.align='center', fig.show='hold'}
