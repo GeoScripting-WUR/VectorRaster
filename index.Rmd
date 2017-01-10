@@ -158,7 +158,7 @@ In the figure above, the left panel displays the output of `crop`, while the sec
 We also have a water mask of Wageningen in vector format. Let's download it and also reproject it to the CRS of the Landsat data.
 
 ```{r, eval=FALSE}
-download.file(url = 'https://github.com/GeoScripting-WUR/VectorRaster/raw/gh-pages/data/wageningenWater.zip', destfile = 'wageningenWater.zip', method = 'auto')
+download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/wageningenWater.zip', destfile = 'wageningenWater.zip', method = 'auto')
 unzip('wageningenWater.zip')
 ## Check the names of the layers for input in readOGR()
 ogrListLayers('Water.shp')
