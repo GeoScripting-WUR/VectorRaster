@@ -1,5 +1,5 @@
 ---
-author: "Loïc Dutrieux and Jan Verbesselt"
+author: "Loïc Dutrieux, Jan Verbesselt and Dainius Masiliunas"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   knitrBootstrap::bootstrap_document:
@@ -13,18 +13,19 @@ output:
 # Today
 
 - Morning: Self-study & answer the questions within the lesson
-- 1330-1430: Questions and clarifications
+- 13:30-14:30: Questions and clarifications
 - Rest of the afternoon: Do/finalise the exercise.
 
 # Today's learning objectives
 
-At the end of the lecture, you should be able to
-* Have an overview of what can be achived when combining raster and vector data in R
-* Be able to extract raster data using vector data
+At the end of the lecture, you should be able to:
+
+- Have an overview of what can be achived when combining raster and vector data in R
+- Be able to extract raster data using vector data
 
 # Introduction
 
-In the previous lectures we saw how to deal with [raster](http://geoscripting-wur.github.io/IntroToRaster/) data using R, as well as how to deal with [vector](http://geoscripting-wur.github.io/IntroToVector/) data and the multiple classes of the sp package. In the current lesson, we'll see what can be done when the two worlds of vector data and raster data intersect.
+In the previous lectures we saw how to deal with [raster](http://geoscripting-wur.github.io/IntroToRaster/) data using R, as well as how to deal with [vector](http://geoscripting-wur.github.io/IntroToVector/) data and the multiple classes of the *sp* package. In the current lesson, we'll see what can be done when the two worlds of vector data and raster data intersect.
 
 # Conversions
 
@@ -38,13 +39,13 @@ There is one function that allows to convert an object in vector to a raster obj
 
 ## Raster to vector
 
-Three functions allow to convert raster data to vector; the `rasterToPoints()`, `rasterToContour`, and `rasterToPolygons()` functions. The latter can be useful to convert the result of a classification. In that case, set `dissolve =` to `TRUE` so that the polygons with the same attribute value will be dissolved into multi-polygon regions. This option requires the rgeos package.
+Three functions allow to convert raster data to vector; the `rasterToPoints()`, `rasterToContour()`, and `rasterToPolygons()` functions. The latter can be useful to convert the result of a classification. In that case, set `dissolve =` to `TRUE` so that the polygons with the same attribute value will be dissolved into multi-polygon regions. This option requires the *rgeos* package. **Note**: These methods are known to perform poorly under R. Calling `gdal_translate` directly or through the *gdalUtils* package can be much faster.
 
 # Geometric operations
 
 Raw raster data do not usually conform to any notion of administrative or geographical boundaries. Vector data (and extents) can be used to mask or crop data to a desired region of interest.
 
-## crop
+## Crop
 
 Cropping consists in reducing the extent of a spatial object to a smaller extent. As a result, the output of `crop()` will automatically be rectangular and will not consider any features such as polygons to perform the subsetting. It is often useful to crop data as tightly as possible to the area under investigation to reduce the amount of data and have a more focused view when visualizing the data.
 
@@ -54,15 +55,15 @@ You can easily define an extent interactively (by clicking) thanks to the `drawE
 
 ## Mask
 
-Mask can be used with almost all spatial objects to mask (= set to `NA`), values of a raster object. When used with a *SpatialPolygon* object, mask will keep values of the raster overlayed by polygons and mask the values outside of polygons.
+`mask()` can be used with almost all spatial objects to mask (= set to `NA`) values of a raster object. When used with a `SpatialPolygon` object, `mask` will keep values of the raster overlayed by polygons and mask the values outside of polygons.
 
-Note the very useful `inverse=` argument of `mask()`, which allows to mask the inverse of the area covered by the features. We will use this feature of mask later in the tutorial to exclude water areas of a raster, defined in an independent *SpatialPolygons* object.
+Note the very useful `inverse=` argument of `mask()`, which allows to mask the inverse of the area covered by the features. We will use this feature of mask later in the tutorial to exclude water areas of a raster, defined in an independent `SpatialPolygons` object.
  
-# Extract
+## Extract
 
-The most common operation when combining vector and raster data is the extraction. It simply consists in extracting the values of a raster object for locations specified by a vector object. The object can be one of the class of the *sp* package, or an *extent* object.
+The most common operation when combining vector and raster data is the extraction. It simply consists in extracting the values of a raster object for locations specified by a vector object. The object can be one of the class of the *sp* package, or an `extent` object.
 
-When using `extract()` with *SpatialPolygons* or *SpatialLines*, individual features of the vector layer may overlay or intersecting several pixels. In that case a function (`fun =`) can be used to summarize the values into one. Note that although most often the function `min`, `max`, `mean` and `median` functions are used for the spatial aggregation and also any custom made function can be used. `extract()` provides many options for the return object, such as a data frame or a new sp object with extracted values appended to the attribute table. See `?extract()` example section.
+When using `extract()` with `SpatialPolygons` or `SpatialLines`, individual features of the vector layer may overlay or intersect several pixels. In that case a function (`fun =`) can be used to summarize the values into one. Note that although most often the function `min`, `max`, `mean` and `median` are used for the spatial aggregation, also any custom-made function can be used. `extract()` provides many options for the return object, such as a data frame or a new *sp* object with extracted values appended to the attribute table. See `?extract()` example section.
 
 # Examples
 
@@ -87,11 +88,11 @@ Step by step we will:
 
 ```{r, eval=FALSE}
 library(raster)
-# Download, unzip and load the data
-download.file(url = 'https://github.com/GeoScripting-WUR/VectorRaster/raw/gh-pages/data/landsat8.zip', destfile = 'landsat8.zip', method = 'auto')
+## Download, unzip and load the data
+download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/landsat8.zip', destfile = 'landsat8.zip', method = 'auto')
 
 unzip('landsat8.zip')
-# Identify the right file
+## Identify the right file
 landsatPath <- list.files(pattern = glob2rx('LC8*.grd'), full.names = TRUE)
 
 wagLandsat <- brick(landsatPath)
@@ -99,40 +100,40 @@ wagLandsat <- brick(landsatPath)
 
 ```{r, echo=FALSE}
 library(raster)
-wagLandsat <- brick('data/LC81970242014109LGN00.grd')
+ wagLandsat <- brick('data/LC81970242014109LGN00.grd')
 ```
 
-We can start by visualizing the data, since it is a multispectral image, we can use `plotRGB()` to do so.
+We can start by visualizing the data. Since it is a multispectral image, we can use `plotRGB()` to do so.
 
 
 ```{r, fig.align='center'}
-# plotRGB does not support negative values, so that they need to be removed
+# plotRGB does not support negative values, so they need to be removed
 wagLandsat[wagLandsat < 0] <- NA
 plotRGB(wagLandsat, 5, 4, 3)
 ```
 
 ```{r}
-# Download municipality boundaries
+## Download municipality boundaries
 nlCity <- raster::getData('GADM',country='NLD', level=2)
 class(nlCity)
-# Investigate the structure of the object
+## Investigate the structure of the object
 head(nlCity@data)
 ```
 
-It seems that the municipality names are in the `NAME_2` column. So that we can subset the SpatialPolygonsDataFrame to the city of Wageningen alone. To do so we can use simple data frame manipulation/subsetting syntax.
+It seems that the municipality names are in the `NAME_2` column. So we can subset the `SpatialPolygonsDataFrame` to the city of Wageningen alone. To do so we can use simple data frame manipulation/subsetting syntax.
 
 
 ```{r}
-nlCity@data <- nlCity@data[!is.na(nlCity$NAME_2),] ## remove rows with NA
+nlCity@data <- nlCity@data[!is.na(nlCity$NAME_2),] # Remove rows with NA
 wagContour <- nlCity[nlCity$NAME_2 == 'Wageningen',]
 ```
 
 We can use the resulting `wagContour` object, to mask the values out of Wageningen, but first, since the two objects are in different coordinate systems, we need to reproject one to the projection of the other.
 
-> **Question:** Would you rather reproject a raster or a vector layer? Give two reasons why you would choose to reproject a raster or vector.
+> **Question 1:** Would you rather reproject a raster or a vector layer? Give two reasons why you would choose to reproject a raster or vector.
 
 ```{r, message=FALSE}
-# Load rgdal library (needed to reproject data)
+## Load rgdal library (needed to reproject data)
 library(rgdal)
 wagContourUTM <- spTransform(wagContour, CRS(proj4string(wagLandsat)))
 ```
@@ -143,23 +144,23 @@ Now that the two objects are in the same CRS, we can do the masking and visualiz
 wagLandsatCrop <- crop(wagLandsat, wagContourUTM)
 wagLandsatSub <- mask(wagLandsat, wagContourUTM)
 
-# Set graphical parameters (one row and two columns)
+## Set graphical parameters (one row and two columns)
 opar <- par(mfrow=c(1,2))
 plotRGB(wagLandsatCrop, 5, 4, 3, main = 'Crop()')
 plotRGB(wagLandsatSub, 5, 4, 3, main = 'Mask()')
 plot(wagContourUTM, add = TRUE, border = "green", lwd = 3)
-# Reset graphical parameters
+## Reset graphical parameters
 par(opar)
 ```
 
-In the figure above, the left panel displays the output of crop, while the second panel shows the result of masking the Landsat scene using the contour of Wageningen as input.
+In the figure above, the left panel displays the output of `crop`, while the second panel shows the result of masking the Landsat scene using the contour of Wageningen as input.
 
 We also have a water mask of Wageningen in vector format. Let's download it and also reproject it to the CRS of the Landsat data.
 
 ```{r, eval=FALSE}
 download.file(url = 'https://github.com/GeoScripting-WUR/VectorRaster/raw/gh-pages/data/wageningenWater.zip', destfile = 'wageningenWater.zip', method = 'auto')
 unzip('wageningenWater.zip')
-# Check the names of the layers for input in readOGR()
+## Check the names of the layers for input in readOGR()
 ogrListLayers('Water.shp')
 water <- readOGR('Water.shp', layer = 'Water')
 waterUTM <- spTransform(water, CRS(proj4string(wagLandsat)))
@@ -170,30 +171,30 @@ water <- readOGR('data/Water.shp', layer = 'Water')
 waterUTM <- spTransform(water, CRS(proj4string(wagLandsat)))
 ```
 
-Note the use of `inverse = TRUE` in the code below, to *mask* the pixels the intersect with the features of the vector object.
+Note the use of `inverse = TRUE` in the code below, to *mask* the pixels that intersect with the features of the vector object.
 
 
 ```{r, fig.align='center'}
-wagLandsatSubW <- mask(wagLandsatSub, mask = waterUTM, inverse = TRUE)
+2wagLandsatSubW <- mask(wagLandsatSub, mask = waterUTM, inverse = TRUE)
 plotRGB(wagLandsatSubW, 5, 4, 3)
 plot(waterUTM, col = 'blue', add = TRUE, border = 'blue', lwd = 2)
 ```
 
-For the rest of the example, we'll use the `wagLandsatCrop` object, for I have a few doubts about the spatial accuracy of the two vector layers we used in the masking steps. You can check for yourself by converting them to KML and opening them in Google Earth. (Let us know during the lesson, what do you think? any solutions?)
+For the rest of the example, we'll use the `wagLandsatCrop` object, for I have a few doubts about the spatial accuracy of the two vector layers we used in the masking steps. You can check for yourself by converting them to KML and opening them in Google Earth. (Let us know during the lesson, what do you think? Any solutions?)
 
 ### Build a calibration dataset in Google Earth
-Below we'll see how we can deal with a calibration dataset with R, for calibrating a classifier. It involves working with SpatialPointsDataFrames, extracting reflectance data for the corresponding calibration samples, manipulating data frames and building a model that can be used to predict land cover. But first we need to build the calibration dataset (ground truth), and for that we will use Google Earth.
+Below we'll see how we can deal with a calibration dataset in R, for calibrating a classifier. It involves working with `SpatialPointsDataFrame` classes, extracting reflectance data for the corresponding calibration samples, manipulating data frames and building a model that can be used to predict land cover. But first we need to build the calibration dataset (ground truth), and for that we will use Google Earth.
 
-Open Google Earth, in ''places'', right click on ''Temporary Places'' and select ''Add -> Folder''; name it appropriately (it will be your `layer =` argument afterwards when reading the KML file). Add new placemaks to that folder, and put the interpreted land cover in the description field. Keep it to a few classes, such as agric, forest, water, urban. I also added flood, to categorize the flood plain nearby the river. When you are done (15 - 30 points), save the file.
+Open Google Earth, in *places*, right click on *Temporary Places* and select *Add → Folder*; name it appropriately (it will be your `layer =` argument afterwards when reading the KML file). Add new placemaks to that folder, and put the interpreted land cover in the description field. Keep it to a few classes, such as `agric`, `forest`, `water`, `urban`. I also added `flood`, to categorize the flood plain nearby the river. When you are done (15 - 30 points), save the file.
 
-> Note that in the approach described above, we get to decide where the calibration samples are. Another approach would be to automatically generate randomly distributed samples. This can be done very easily in R using the `sampleRandom()` function, which automatically returns a SpatialPoints objects of any given size. In the familly of spatial sampling functions, there is also `sampleRegular()` (for regular sampling) and `sampleStratified()`, which can be used on a categorical raster (e.g. a landcover classification), to ensure that all classes are equaly represented in the sample.
+**Note:** in the approach described above, we get to decide where the calibration samples are. Another approach would be to automatically generate randomly distributed samples. This can be done very easily in R using the `sampleRandom()` function, which automatically returns a `SpatialPoints` object of any given size. In the familly of spatial sampling functions, there is also `sampleRegular()` (for regular sampling) and `sampleStratified()`, which can be used on a categorical raster (e.g. a land cover classification), to ensure that all classes are equaly represented in the sample.
 
 
 ### Calibrate the classifier
-Load the newly created kml file using the `readOGR()` function. The object should be a SpatialPointsDataFrame and the information created is stored in the description column of the data frame.
+Load the newly created KML file using the `readOGR()` function. The object should be a `SpatialPointsDataFrame` and the information created is stored in the description column of the data frame.
 
 ```{r, eval=FALSE}
-# Change to the correct file path and layer name
+## Change to the correct file path and layer name
 samples <- readOGR('sampleLongLat.kml', layer = 'sampleLongLat')
 ```
 
@@ -204,21 +205,21 @@ samples <- readOGR('data/sampleLongLat2.kml', layer = 'sampleLongLat')
 We now need to extract the surface reflectance values of the corresponding samples. But first the data once again need to be re-projected to the CRS of the Landsat data.
 
 ```{r}
-# Re-project SpatialPointsDataFrame
+## Re-project SpatialPointsDataFrame
 samplesUTM <- spTransform(samples, CRS(proj4string(wagLandsatCrop)))
 # The extract function does not understand why the object would have 3 coord columns, so we need to edit this field
 samplesUTM@coords <- coordinates(samplesUTM)[,-3]
-# Extract the surface reflectance 
+## Extract the surface reflectance 
 calib <- extract(wagLandsatCrop, samplesUTM, df=TRUE) ## df=TRUE i.e. return as a data.frame
-# Combine the newly created dataframe to the description column of the calibration dataset
+## Combine the newly created dataframe to the description column of the calibration dataset
 calib2 <- cbind(samplesUTM$Description, calib)
-# Change the name of the first column, for convienience
+## Change the name of the first column, for convienience
 colnames(calib2)[1] <- 'lc'
-# Inspect the structure of the dataframe
+## Inspect the structure of the dataframe
 str(calib2)
 ```
 
-> Note the use of `df = TRUE` in the `extract()` call, so that we get a data frame in return. Data frame are the most common class to work with all types of models, such as linear models (`lm()`) or random forest models as we use later.
+**Note:** the use of `df = TRUE` in the `extract()` call is so that we get a data frame in return. Data frame is the most common class to work with all types of models, such as linear models (`lm()`) or random forest models as we use later.
 
 Now we will calibrate a random forest model using the extracted data frame.
 Do not focus too much on the algorithm used, the important part for this tutorial is the data extraction and the following data frame manipulation. More details will come about random forest classifiers tomorrow.
@@ -229,9 +230,9 @@ if(!require(randomForest)) {
   install.packages("randomForest")
 }
 library(randomForest)
-# Calibrate model
+## Calibrate model
 model <- randomForest(lc ~ band1 + band2 + band3 + band4 + band5 + band6 + band7, data = calib2)
-# Use the model to predict land cover
+## Use the model to predict land cover
 lcMap <- predict(wagLandsatCrop, model = model)
 ```
 
@@ -252,13 +253,13 @@ In the following example, we will run a transect across Belgium and visualize th
 Let's first download the elevation data of Belgium, using the `getData()` function of the raster package.
 
 ```{r}
-# Download data
+## Download data
 bel <- getData('alt', country='BEL', mask=TRUE)
-# Display metadata
+## Display metadata
 bel
 ```
 
-`bel` is a RasterLayer
+`bel` is a `RasterLayer`.
 
 We can start by visualizing the data.
 
@@ -268,7 +269,7 @@ plot(bel)
 
 Everything seems correct.
 
-We want to look at a transect, which we can draw by hand by selecting two points by clicking. The `drawLine()` function will help us do that. Once you run the function, you will be able to click in the plotting window of RStudio (The `bel` object should already be present in the plot panel before running `drawLine()`). Click ''Finish'' once you have selected the two extremities of the line.
+We want to look at a transect, which we can draw by hand by selecting two points by clicking. The `drawLine()` function will help us do that. Once you run the function, you will be able to click in the plotting window of R (The `bel` object should already be present in the plot panel before running `drawLine()`). Click ''Finish'' once you have selected the two extremities of the line.
 
 
 ```{r, eval=FALSE}
@@ -293,22 +294,22 @@ We can already plot the result as follows, but the x axis does not really provid
 plot(alt[[1]], type = 'l', ylab = "Altitude (m)")
 ```
 
-In order to make an index for the x axis, we can calculate the distance between the two extremities of the transect, using `distHaversine()` from the geosphere package.
+In order to make an index for the x axis, we can calculate the distance between the two extremities of the transect, using `distHaversine()` from the *geosphere* package.
 
 ```{r}
 if(!require(geosphere)) {
   install.packages("geosphere")
 }
 library(geosphere)
-# Calculate great circle distance between the two ends of the line
+## Calculate great circle distance between the two ends of the line
 dist <- distHaversine(coordinates(line)[[1]][[1]][1,], coordinates(line)[[1]][[1]][2,])
-# Format an array for use as x axis index with the same length as the alt[[1]] array
+## Format an array for use as x axis index with the same length as the alt[[1]] array
 distanceVector <- seq(0, dist, along.with = alt[[1]])
 ```
 
-> **Question**: Why can't we simply use the `LineLength()` function from the sp package?
+> **Question 2**: Why can't we simply use the `LineLength()` function from the *sp* package?
 
-> Hint, look at the CRS in which we are working, and at the help page of the `distHaversine()` function. Also the see `distVincentyEllipsoid()` function. Does this one provide a more accurate distance?
+*Hint:* look at the `CRS` in which we are working, and at the help page of the `distHaversine()` function. Also the see `distVincentyEllipsoid()` function. Does this one provide a more accurate distance?
 
 Note that there is a small approximation on the position of the line and the distances between the samples as the real shortest path between two points is not a straight line in lat-long, while the distance we just calculated is the shortest path. For short distances, as in the example, this is acceptable.
 Otherwise, we could also have:
@@ -319,7 +320,7 @@ Otherwise, we could also have:
 Let's now visualize the final output.
 
 ```{r, fig.align='center', fig.show='hold'}
-# Visualize the output
+## Visualize the output
 plot(bel, main = 'Altitude (m)')
 plot(line, add = TRUE)
 plot(distanceVector/1000, alt[[1]], type = 'l',
@@ -336,7 +337,7 @@ Below is an extra example and a simplification of the random sample demo show [h
 to randomly sample altitude information from a DEM of Belgium:
 
 ```{r}
-## you can choose your own country here
+# You can choose your own country here
 bel <- getData('alt', country='BEL', mask=TRUE) ## SRTM 90m height data
 belshp <- getData('GADM', country='BEL', level=2) ## administrative boundaries
 
@@ -350,17 +351,17 @@ sRandomData <- data.frame(altitude = sRandomBel@data[[1]],
 ```
 
 ```{r, fig.align='center', fig.show='hold'}
-## spatial plot
+## Plot
 plot(bel)
 plot(belshp, add=TRUE)
 plot(sRandomBel, add = TRUE, col = "red")
 
-## Altitude versus Latitude
+## Plot altitude versus latitude
 plot(sRandomData$latitude,sRandomData$altitude, ylab = "Altitude (m)", xlab = "Latitude (degrees)")
 ```
 
 
-> Note: If you would like to sample height data per province randomly what would you need to do?
+> **Question 3:** If you would like to sample height data per province randomly, what would you need to do?
 
 
 # Exercise
@@ -396,9 +397,9 @@ I gave him a sign with my arm indicating that it didn't matter and kept walking 
 
 ## Exercise
 
-Please help me find out which "municipality" in the Netherlands is the greenest. You can use the MODIS NDVI data available [here](https://github.com/GeoScripting-WUR/VectorRaster/raw/gh-pages/data/MODIS.zip).
+Please help me find out which "municipality" in the Netherlands is the greenest. You can use the MODIS NDVI data available [here](https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/MODIS.zip).
 
-Hint: use `nlMunicipality <- getData('GADM',country='NLD', level=2)`
+*Hint*: use `nlMunicipality <- getData('GADM',country='NLD', level=2)`
 
 - Find the greenest Municipality:
 	- In January
@@ -408,6 +409,6 @@ Hint: use `nlMunicipality <- getData('GADM',country='NLD', level=2)`
 
 [Click here for more information about MODIS data used (i.e. MOD13A3)](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod13a3)
 
-Bonus: What about provinces (see `?raster::aggregate`). Which province is the greenest in January?
+Bonus: What about provinces (see `?raster::aggregate`), which province is the greenest in January?
 
-Submit: Copy/paste your Github repo link to the Script Review Center
+Submit: Copy/paste your GitHub repo link to the Script Review Center
