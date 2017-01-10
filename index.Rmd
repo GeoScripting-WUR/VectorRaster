@@ -212,7 +212,7 @@ samplesUTM@coords <- coordinates(samplesUTM)[,-3]
 ## Extract the surface reflectance 
 calib <- extract(wagLandsatCrop, samplesUTM, df=TRUE) ## df=TRUE i.e. return as a data.frame
 ## Combine the newly created dataframe to the description column of the calibration dataset
-calib2 <- cbind(samplesUTM$Description, calib)
+calib2 <- cbind(samplesUTM$description, calib)
 ## Change the name of the first column, for convienience
 colnames(calib2)[1] <- 'lc'
 ## Inspect the structure of the dataframe
@@ -269,7 +269,7 @@ plot(bel)
 
 Everything seems correct.
 
-We want to look at a transect, which we can draw by hand by selecting two points by clicking. The `drawLine()` function will help us do that. Once you run the function, you will be able to click in the plotting window of R (The `bel` object should already be present in the plot panel before running `drawLine()`). Click ''Finish'' once you have selected the two extremities of the line.
+We want to look at a transect, which we can draw by hand by selecting two points by clicking. The `drawLine()` function will help us do that. Once you run the function, you will be able to click in the plotting window of R (The `bel` object should already be present in the plot panel before running `drawLine()`). Click *Finish* or right-click on the plot once you have selected the two extremities of the line.
 
 
 ```{r, eval=FALSE}
