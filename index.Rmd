@@ -175,7 +175,7 @@ Note the use of `inverse = TRUE` in the code below, to *mask* the pixels that in
 
 
 ```{r, fig.align='center'}
-2wagLandsatSubW <- mask(wagLandsatSub, mask = waterUTM, inverse = TRUE)
+wagLandsatSubW <- mask(wagLandsatSub, mask = waterUTM, inverse = TRUE)
 plotRGB(wagLandsatSubW, 5, 4, 3)
 plot(waterUTM, col = 'blue', add = TRUE, border = 'blue', lwd = 2)
 ```
