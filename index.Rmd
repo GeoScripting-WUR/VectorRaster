@@ -1,5 +1,5 @@
 ---
-author: "Loïc Dutrieux, Jan Verbesselt and Dainius Masiliunas"
+author: "Loïc Dutrieux, Jan Verbesselt, Dainius Masiliunas and David Swinkels"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   knitrBootstrap::bootstrap_document:
@@ -20,18 +20,42 @@ output:
 
 At the end of the lecture, you should be able to:
 
-- Have an overview of what can be achived when combining raster and vector data in R
+- Have an overview of what can be achieved when combining raster and vector data in R
+- Transform simple feature objects of the *sf* package into spatial object of the *sp* package
 - Be able to extract raster data using vector data
 
 # Introduction
 
-In the previous lectures we saw how to deal with [raster](http://geoscripting-wur.github.io/IntroToRaster/) data using R, as well as how to deal with [vector](http://geoscripting-wur.github.io/IntroToVector/) data and the multiple classes of the *sp* package. In the current lesson, we'll see what can be done when the two worlds of vector data and raster data intersect.
+In the previous lectures we saw how to deal with [raster](http://geoscripting-wur.github.io/IntroToRaster/) data using R, as well as how to deal with [vector](http://geoscripting-wur.github.io/IntroToVector/) data and the multiple classes of the *sf* package. 
+
+In this previous vector tutorial we used *sf*, but another popular package that handles vector data in R is *sp*. *Sp* is similar to *sf*, but is able to work with vector data and raster data through the *raster* package. In the current lesson, we'll see what can be done when the two worlds of vector data and raster data intersect. Secondly we will learn how to change *sf* objects to *sp* objects.
+
+# Working with *sp*
+
+The package *sp* provides classes for spatial-only geometries, such as `SpatialPoints` (for points), and combinations of geometries and attribute data, such as a `SpatialPointsDataFrame`. These data classes are very similar to [data classes in *sf* package](http://geoscripting-wur.github.io/IntroToVector/). The following data classes are available for spatial vector data in *sp* package [@Edzer:2005ux]:
+
+| Geometry      | class                     | attribute     |
+|-------------  |-----------------          |-------------  |
+| points        | *SpatialPoints*           | No            |
+| points        | *SpatialPointsDataFrame*  | data.frame   |
+| line          | *Line*                    | No           |
+| lines         | *Lines*                   | No           |
+| lines         | *SpatialLines*            | No           |
+| lines         | *SpatialLinesDataFrame*   | data.frame      |
+| rings         | *Polygon*                    | No           |
+| rings         | *Polygons*                   | No           |
+| rings         | *SpatialPolygons*            | No           |
+| rings         | *SpatialPolygonsDataFrame*   | data.frame   |
+
+Table:  Overview of *sp* package spatial-only geometry classes.
+
+The functions of the *sp* package work together with functions in *rgdal*, *rgeos* and *raster* package to do format changes, geomety selections or transformations and raster/vector format changes.
 
 # Conversions
 
 You will find some utilities in R to convert data from raster to vector format and vice-versa. However, whenever you start converting objects, you should wonder whether you are taking the right approach to solve your problem. An approach that does not involve converting your data from vector to raster or the opposite should almost always be preferred.
 
-As a result, because these functions are only useful for some very particular situations, I only give below a brief description of them.
+As a result, because these functions are only useful for some very particular situations, I only give a brief description of them below.
 
 ## Vector to raster
 
@@ -78,8 +102,8 @@ Step by step we will:
 - Download Water area data of Wageningen
 - Mask the data to match the boundaries of the city
 - Mask the data to exclude water bodies
-- Build a calibration dataset using Google Earth image interpretation
-- Export the Google Earth file and import it in R
+- Build a calibration dataset using Google Maps
+- Export the KML file and import it in R
 - Extract the surface reflectance values for the calibration pixels
 - Calibrate a model with the classifier
 - Predict the land cover using a Landsat image
@@ -100,7 +124,7 @@ wagLandsat <- brick(landsatPath)
 
 ```{r, echo=FALSE}
 library(raster)
- wagLandsat <- brick('data/LC81970242014109LGN00.grd')
+wagLandsat <- brick('data/LC81970242014109LGN00.grd')
 ```
 
 We can start by visualizing the data. Since it is a multispectral image, we can use `plotRGB()` to do so.
@@ -128,9 +152,9 @@ nlCity@data <- nlCity@data[!is.na(nlCity$NAME_2),] # Remove rows with NA
 wagContour <- nlCity[nlCity$NAME_2 == 'Wageningen',]
 ```
 
-We can use the resulting `wagContour` object, to mask the values out of Wageningen, but first, since the two objects are in different coordinate systems, we need to reproject one to the projection of the other.
+We can use the resulting `wagContour` object, to mask the values out of Wageningen, but first, since the two objects are in different coordinate systems, we need to reproject the projection of one to the other.
 
-> **Question 1:** Would you rather reproject a raster or a vector layer? Give two reasons why you would choose to reproject a raster or vector.
+> ** Question 1 **: Would you rather reproject a raster or a vector layer? Give two reasons why you would choose to reproject a raster or vector.
 
 ```{r, message=FALSE}
 ## Load rgdal library (needed to reproject data)
@@ -140,7 +164,7 @@ wagContourUTM <- spTransform(wagContour, CRS(proj4string(wagLandsat)))
 
 Now that the two objects are in the same CRS, we can do the masking and visualize the result. Let's first crop and then mask, to see the difference.
 
-```{r, fig.align='center', fig.show='hold', fig.cap='Example of crop and mask'}
+```{r, fig.align='center', fig.show='hold'}
 wagLandsatCrop <- crop(wagLandsat, wagContourUTM)
 wagLandsatSub <- mask(wagLandsat, wagContourUTM)
 
@@ -180,40 +204,68 @@ plotRGB(wagLandsatSubW, 5, 4, 3)
 plot(waterUTM, col = 'blue', add = TRUE, border = 'blue', lwd = 2)
 ```
 
-For the rest of the example, we'll use the `wagLandsatCrop` object, for I have a few doubts about the spatial accuracy of the two vector layers we used in the masking steps. You can check for yourself by converting them to KML and opening them in Google Earth. (Let us know during the lesson, what do you think? Any solutions?)
+For the rest of the example, we'll use the `wagLandsatCrop` object, for I have a few doubts about the spatial accuracy of the two vector layers we used in the masking steps. You can check for yourself by converting them to KML and opening them in Google My Maps. (Let us know during the lesson, what do you think? Any solutions?)
 
-### Build a calibration dataset in Google Earth
-Below we'll see how we can deal with a calibration dataset in R, for calibrating a classifier. It involves working with `SpatialPointsDataFrame` classes, extracting reflectance data for the corresponding calibration samples, manipulating data frames and building a model that can be used to predict land cover. But first we need to build the calibration dataset (ground truth), and for that we will use Google Earth.
+### Build a calibration dataset in Google Maps
+Below we'll see how we can deal with a calibration dataset in R, for calibrating a classifier. It involves working with `SpatialPointsDataFrame` classes, extracting reflectance data for the corresponding calibration samples, manipulating data frames and building a model that can be used to predict land cover. But first we need to build the calibration dataset (ground truth), and for that we will use Google Maps.
 
-Open Google Earth, in *places*, right click on *Temporary Places* and select *Add → Folder*; name it appropriately (it will be your `layer =` argument afterwards when reading the KML file). Add new placemaks to that folder, and put the interpreted land cover in the description field. Keep it to a few classes, such as `agric`, `forest`, `water`, `urban`. I also added `flood`, to categorize the flood plain nearby the river. When you are done (15 - 30 points), save the file.
+Open [Google My Maps](https://www.google.com/maps/about/mymaps/), click *get started*, login on your google account, create a new map by clicking on the *+* sign, name the map training_landcover, name the untitled layer *landcover_points*, change the basemap to a satellite map, click *add marker*, draw points on top of a few landcover types, and name the point as the land cover type. Try to keep your points close to Wageningen (otherwise they are out of the extent of the landsat tile). Keep it to a few classes, such as `agric`, `forest`, `water`, `urban`. When you are done (15 - 30 points), export the file to kml.
 
-**Note:** in the approach described above, we get to decide where the calibration samples are. Another approach would be to automatically generate randomly distributed samples. This can be done very easily in R using the `sampleRandom()` function, which automatically returns a `SpatialPoints` object of any given size. In the familly of spatial sampling functions, there is also `sampleRegular()` (for regular sampling) and `sampleStratified()`, which can be used on a categorical raster (e.g. a land cover classification), to ensure that all classes are equaly represented in the sample.
+**Note:** in the approach described above, we get to decide where the calibration samples are. Another approach would be to automatically generate randomly distributed samples. This can be done very easily in R using the `sampleRandom()` function, which automatically returns a `SpatialPoints` object of any given size. In the family of spatial sampling functions, there is also `sampleRegular()` (for regular sampling) and `sampleStratified()`, which can be used on a categorical raster (e.g. a land cover classification), to ensure that all classes are equally represented in the sample.
 
+### Transform *sf* object into *sp* object
 
-### Calibrate the classifier
-Load the newly created KML file using the `readOGR()` function. The object should be a `SpatialPointsDataFrame` and the information created is stored in the description column of the data frame.
+Until now in this tutorial we worked with *sp* vector objects. But in the previous tutorial we learnt how to use *sf* functionality. When combining raster and vector data with functions such as extract, mask and crop, you need to work with *sp* and *raster* packages instead of *sf*.  Let's transform  a *sf* object into a *sp* object.
 
-```{r, eval=FALSE}
-## Change to the correct file path and layer name
-samples <- readOGR('sampleLongLat.kml', layer = 'sampleLongLat')
+Load the newly created KML file using the `st_read()` function. 
+
+```{r, eval = FALSE}
+library(sf)
+samples <- st_read(dsn = './data/sampleLandcover.kml')
 ```
 
 ```{r, echo = FALSE}
-samples <- readOGR('data/sampleLongLat2.kml', layer = 'sampleLongLat')
+library(sf)
+samples <- st_read(dsn = './data/sampleLandcover.kml')
 ```
 
-We now need to extract the surface reflectance values of the corresponding samples. But first the data once again need to be re-projected to the CRS of the Landsat data.
+Okay nice the data has been read as a simple feature. Re-project the object to the CRS of the Landsat data and then change from simple feature point object to a spatial points data frame with `as()`. The `as()` function is a simple function to coerce an object to belong to a class.
 
 ```{r}
 ## Re-project SpatialPointsDataFrame
-samplesUTM <- spTransform(samples, CRS(proj4string(wagLandsatCrop)))
+samples_utm <- st_transform(samples, crs = proj4string(wagLandsat))
+
+## Convert simple feature from *sf* package 
+# to spatial feature of *sp* package
+samples_utm_sp <- as(samples_utm, "Spatial")
+```
+
+
+```{r}
+## Check if the classes are different
+class(samples_utm)
+class(samples_utm_sp)
+```
+
+```{r}
+## Check if the markers are on top of the cropped satellite image
+plot(samples_utm_sp, col = "red", pch = 4)
+plot(wagLandsatCrop$band1, alpha = 0.5, add = T)
+# alpha arguments sets transparency on a scale of 0.0 to 1.0
+```
+
+Luckily all the points are within the boundaries of the cropped satellite image. If some points fall outside, remove those markers in your KML in google maps and add some new ones.
+
+### Calibrate the classifier
+```{r}
 # The extract function does not understand why the object would have 3 coord columns, so we need to edit this field
-samplesUTM@coords <- coordinates(samplesUTM)[,-3]
+samples_utm_sp@coords <- coordinates(samples_utm_sp)[,-3]
+
 ## Extract the surface reflectance 
-calib <- extract(wagLandsatCrop, samplesUTM, df=TRUE) ## df=TRUE i.e. return as a data.frame
+calib <- extract(wagLandsatCrop, samples_utm_sp, df=TRUE) ## df=TRUE i.e. return as a data.frame
 ## Combine the newly created dataframe to the description column of the calibration dataset
-calib2 <- cbind(samplesUTM$description, calib)
-## Change the name of the first column, for convienience
+calib2 <- cbind(samples_utm_sp$Name, calib)
+## Change the name of the first column, for convenience
 colnames(calib2)[1] <- 'lc'
 ## Inspect the structure of the dataframe
 str(calib2)
@@ -240,10 +292,11 @@ Let's visualize the output. The function `levelplot()` from the rasterVis packag
 
 ```{r, fig.align='center'}
 library(rasterVis)
-levelplot(lcMap, col.regions = c('green', 'brown', 'darkgreen', 'lightgreen', 'grey', 'blue'))
+levelplot(lcMap, main = "Landcover Map of Wageningen", col.regions = c('lightgreen', 'darkgreen', 'orange', 'blue'))
 ```
 
-OK, we've seen better land cover maps of Wageningen, but given the amount of training data we used (14 in my case), it is not too bad. A larger calibration dataset would certainly result in a better accuracy.
+
+OK, we've seen better land cover maps of Wageningen, but given the amount of training data we used (22 in my case), it is not too bad. A larger calibration dataset would certainly result in a better accuracy.
 
 ## Extract raster values along a transect
 
@@ -307,7 +360,8 @@ dist <- distHaversine(coordinates(line)[[1]][[1]][1,], coordinates(line)[[1]][[1
 distanceVector <- seq(0, dist, along.with = alt[[1]])
 ```
 
-> **Question 2**: Why can't we simply use the `LineLength()` function from the *sp* package?
+
+> ** Question 2 **: Why can't we simply use the `LineLength()` function from the *sp* package?
 
 *Hint:* look at the `CRS` in which we are working, and at the help page of the `distHaversine()` function. Also the see `distVincentyEllipsoid()` function. Does this one provide a more accurate distance?
 
@@ -361,13 +415,13 @@ plot(sRandomData$latitude,sRandomData$altitude, ylab = "Altitude (m)", xlab = "L
 ```
 
 
-> **Question 3:** If you would like to sample height data per province randomly, what would you need to do?
+> ** Question 3 **: If you would like to sample height data per province randomly, what would you need to do?
 
 
 # Exercise
 
 ## Background
-Last week end, on a rainy Saturday afternoon in Wageningen, my friend and I decided to go for a coffee. We had met at the market, while shopping for fresh vegetable, when we thought of moving to a warmer and drier place to catch up a bit since last time we had met a month ago. We were both sitting in the cafe; me by the window and he, sitting on the opposite side of the table, facing the rest of the busy room. The chattering of the crown behind me, mixed with the clinking of glasses and the hissing sound of the espresso machine releasing its vapour was giving the feeling of an old movie to the place. The rain beating the window was only adding to this atmosphere. As we were discussing, I was contemplating the rain drops rolling down the glass, on the other side of the window; gaining speed and chasing each others on the smooth surface, then being pushed out of their trajectory by a sudden burst of wind, and gaining momentum again. He suddently exclaimed:
+Last week end, on a rainy Saturday afternoon in Wageningen, my friend and I decided to go for a coffee. We had met at the market, while shopping for fresh vegetables, when we thought of moving to a warmer and drier place to catch up a bit since last time we had met a month ago. We were both sitting in the cafe; me by the window and he, sitting on the opposite side of the table, facing the rest of the busy room. The chattering of the crown behind me, mixed with the clinking of glasses and the hissing sound of the espresso machine releasing its vapour was giving the feeling of an old movie to the place. The rain beating the window was only adding to this atmosphere. As we were discussing, I was contemplating the rain drops rolling down the glass, on the other side of the window; gaining speed and chasing each others on the smooth surface, then being pushed out of their trajectory by a sudden burst of wind, and gaining momentum again. He suddently exclaimed:
 
 *'Did you know that Hoenderloo is the greenest city in the Netherlands?'*
   
