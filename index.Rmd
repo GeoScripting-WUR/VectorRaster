@@ -4,11 +4,14 @@ date: "`r format(Sys.time(), '%d %B, %Y')`"
 output:
   knitrBootstrap::bootstrap_document:
     title: "Raster Vector integration in R"
-    theme: cosmo
+    theme: "simplex"
+    highlight: Tomorrow Night Bright
     menu: FALSE
+    theme.chooser: TRUE
+    highlight.chooser: TRUE
 ---
 
-# [WUR Geoscripting](https://geoscripting-wur.github.io/) ![WUR logo](http://www.wageningenur.nl/upload/f9a0b5f2-15c5-4b84-9e14-20ef02f5e265_wur-logo.png)
+# [WUR Geoscripting](https://geoscripting-wur.github.io/) <img src="http://www.wur.nl/upload/b43b7095-e452-482a-8969-fed9a50393a8_WUR_RGB_standard.png" alt="WUR logo" style="height: 35px;"/>
 
 # Today
 
@@ -449,7 +452,7 @@ The rain had stopped. We got up, paid our coffees to the counter, exited the caf
   
 I gave him a sign with my arm indicating that it didn't matter and kept walking home.
 
-## Exercise
+## Exercise Lesson 07
 
 Please help me find out which "municipality" in the Netherlands is the greenest. You can use the MODIS NDVI data available [here](https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/MODIS.zip).
 
@@ -465,4 +468,3 @@ Please help me find out which "municipality" in the Netherlands is the greenest.
 
 Bonus: What about provinces (see `?raster::aggregate`), which province is the greenest in January?
 
-Submit: Copy/paste your GitHub repo link to the Script Review Center
