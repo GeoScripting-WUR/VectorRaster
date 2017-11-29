@@ -31,7 +31,7 @@ At the end of the lecture, you should be able to:
 
 In the previous lectures we saw how to deal with [raster](http://geoscripting-wur.github.io/IntroToRaster/) data using R, as well as how to deal with [vector](http://geoscripting-wur.github.io/IntroToVector/) data and the multiple classes of the *sf* package. 
 
-In this previous vector tutorial we used *sf*, but another popular package that handles vector data in R is *sp*. *Sp* is similar to *sf*, but is able to work with vector data and raster data through the *raster* package. In the current lesson, we'll see what can be done when the two worlds of vector data and raster data intersect. Secondly we will learn how to change *sf* objects to *sp* objects.
+In this previous vector tutorial we used *sf*, but another popular package that handles vector data in R is *sp*. *Sp* is similar to *sf*, but it is able to work with vector data and raster data through the *raster* package. In the current lesson, we'll see what can be done when the two worlds of vector data and raster data intersect. Secondly we will learn how to change *sf* objects to *sp* objects.
 
 # Working with *sp*
 
@@ -173,8 +173,8 @@ wagLandsatSub <- mask(wagLandsat, wagContourUTM)
 
 ## Set graphical parameters (one row and two columns)
 opar <- par(mfrow=c(1,2))
-plotRGB(wagLandsatCrop, 5, 4, 3, main = 'Crop()')
-plotRGB(wagLandsatSub, 5, 4, 3, main = 'Mask()')
+plotRGB(wagLandsatCrop, 5, 4, 3)
+plotRGB(wagLandsatSub, 5, 4, 3)
 plot(wagContourUTM, add = TRUE, border = "green", lwd = 3)
 ## Reset graphical parameters
 par(opar)
@@ -218,16 +218,11 @@ Open [Google My Maps](https://www.google.com/maps/about/mymaps/), click *get sta
 
 ### Transform *sf* object into *sp* object
 
-Until now in this tutorial we worked with *sp* vector objects. But in the previous tutorial we learnt how to use *sf* functionality. When combining raster and vector data with functions such as extract, mask and crop, you need to work with *sp* and *raster* packages instead of *sf*.  Let's transform  a *sf* object into a *sp* object.
+Until now in this tutorial we worked with *sp* vector objects. But in the previous tutorial we learnt how to use *sf* functionality. When combining raster and vector data with functions such as extract, mask and crop, you need to work with *sp* and *raster* packages instead of *sf*. Let's transform  a *sf* object into a *sp* object.
 
 Load the newly created KML file using the `st_read()` function. 
 
-```{r, eval = FALSE}
-library(sf)
-samples <- st_read(dsn = './data/sampleLandcover.kml')
-```
-
-```{r, echo = FALSE}
+```{r}
 library(sf)
 samples <- st_read(dsn = './data/sampleLandcover.kml')
 ```
@@ -253,7 +248,7 @@ class(samples_utm_sp)
 ```{r}
 ## Check if the markers are on top of the cropped satellite image
 plot(samples_utm_sp, col = "red", pch = 4)
-plot(wagLandsatCrop$band1, alpha = 0.5, add = T)
+plot(wagLandsatCrop$band1, alpha = 0.5, legend = F, add = T)
 # alpha arguments sets transparency on a scale of 0.0 to 1.0
 ```
 
