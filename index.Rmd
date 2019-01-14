@@ -15,9 +15,12 @@ output:
 
 # Today
 
-- Morning: Self-study & answer the questions within the lesson
-- 13:30-14:30: Questions and clarifications
-- Rest of the afternoon: Do/finalise the exercise.
+Time  | Activity
+------------- | -------------
+Until 11:00 | Review yesterday's exercise answer of the other team
+Morning       |  Self-study: go through the following tutorial
+14:00 to 15:00  | Discussion
+Rest of the afternoon | Do and finalise the exercise
 
 # Today's learning objectives
 
@@ -416,7 +419,7 @@ plot(sRandomData$latitude,sRandomData$altitude, ylab = "Altitude (m)", xlab = "L
 > ** Question 3 **: If you would like to sample height data per province randomly, what would you need to do?
 
 
-# Exercise
+# Exercise 7: The greenest municipality
 
 ## Background
 Last week end, on a rainy Saturday afternoon in Wageningen, my friend and I decided to go for a coffee. We had met at the market, while shopping for fresh vegetables, when we thought of moving to a warmer and drier place to catch up a bit since last time we had met a month ago. We were both sitting in the cafe; me by the window and he, sitting on the opposite side of the table, facing the rest of the busy room. The chattering of the crown behind me, mixed with the clinking of glasses and the hissing sound of the espresso machine releasing its vapour was giving the feeling of an old movie to the place. The rain beating the window was only adding to this atmosphere. As we were discussing, I was contemplating the rain drops rolling down the glass, on the other side of the window; gaining speed and chasing each others on the smooth surface, then being pushed out of their trajectory by a sudden burst of wind, and gaining momentum again. He suddently exclaimed:
@@ -447,19 +450,48 @@ The rain had stopped. We got up, paid our coffees to the counter, exited the caf
   
 I gave him a sign with my arm indicating that it didn't matter and kept walking home.
 
-## Exercise Lesson 07
+## Your task 
 
-Please help me find out which "municipality" in the Netherlands is the greenest. You can use the MODIS NDVI data available [here](https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/MODIS.zip).
+Please help me find out which "municipality" in the Netherlands was the greenest:
 
-*Hint*: use `nlMunicipality <- getData('GADM',country='NLD', level=2)`
+* in January;
+* in August;
+* on average over the year.
 
-- Find the greenest Municipality:
-	- In January
-	- In August
-	- On average over the year
-- Make at least one map to visualize the results
+Visualize the results using maps with proper titles, labels and legends.
 
-[Click here for more information about MODIS data used (i.e. MOD13A3)](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod13a3)
+## More details
 
-Bonus: What about provinces (see `?raster::aggregate`), which province is the greenest in January?
+* You can use the MODIS NDVI data available [here](https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/MODIS.zip).
+* [Click here for more information about MODIS data used (i.e. MOD13A3)](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod13a3)
+
+```{block, type="alert alert-info"}
+**Hint** Use `nlMunicipality <- getData('GADM',country='NLD', level=2)`
+```
+
+## Assessment
+
+The general rubrics will be used for the assessment of your script. These can be found on BlackBoard. The three specific tasks in the rubrics your script will be assessed on are:
+
+Task1: Find the greenest province in January and August
+
+Task2: Find the greenest province on average over the year
+
+Task3: Visualize the results in at least one plot with proper title, legend and labels.
+
+
+## Bonus
+
+You can earn the bonus points by finding and mapping the greenest province in January.
+
+```{block, type="alert alert-info"}
+**Hint** See `?raster::aggregate`
+```
+
+## Submission
+
+Make sure your script is clear and reproducible. Make a new GitLab project and upload the script there according to the guidelines on BlackBoard. Review the script of another team (see the random team selector Shiny app) tomorrow morning and add an issue t their project with your feedback.
+
+Do not forget to add your teamname, members and date at the top of your script.
+
 
