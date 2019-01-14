@@ -473,9 +473,9 @@ Visualize the results using maps with proper titles, labels and legends.
 
 The general rubrics will be used for the assessment of your script. These can be found on BlackBoard. The three specific tasks in the rubrics your script will be assessed on are:
 
-Task1: Find the greenest province in January and August
+Task1: Find the greenest municipality in January and August
 
-Task2: Find the greenest province on average over the year
+Task2: Find the greenest municipality on average over the year
 
 Task3: Visualize the results in at least one plot with proper title, legend and labels.
 
