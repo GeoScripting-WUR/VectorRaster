@@ -160,7 +160,9 @@ wagContour <- nlCity[nlCity$NAME_2 == 'Wageningen',]
 
 We can use the resulting `wagContour` object, to mask the values out of Wageningen, but first, since the two objects are in different coordinate systems, we need to reproject the projection of one to the other.
 
+```{block, type="alert alert-success"}
 > ** Question 1 **: Would you rather reproject a raster or a vector layer? Give two reasons why you would choose to reproject a raster or vector.
+```
 
 ```{r, message=FALSE}
 ## Load rgdal library (needed to reproject data)
@@ -278,7 +280,7 @@ Now we will calibrate a random forest model using the extracted data frame.
 Do not focus too much on the algorithm used, the important part for this tutorial is the data extraction and the following data frame manipulation. More details will come about random forest classifiers tomorrow.
 
 
-```{r}
+```{r, message = FALSE}
 if(!require(randomForest)) {
   install.packages("randomForest")
 }
@@ -361,8 +363,9 @@ dist <- distHaversine(coordinates(line)[[1]][[1]][1,], coordinates(line)[[1]][[1
 distanceVector <- seq(0, dist, along.with = alt[[1]])
 ```
 
-
+```{block, type="alert alert-success"}
 > ** Question 2 **: Why can't we simply use the `LineLength()` function from the *sp* package?
+```
 
 *Hint:* look at the `CRS` in which we are working, and at the help page of the `distHaversine()` function. Also the see `distVincentyEllipsoid()` function. Does this one provide a more accurate distance?
 
@@ -415,8 +418,9 @@ plot(sRandomBel, add = TRUE, col = "red")
 plot(sRandomData$latitude,sRandomData$altitude, ylab = "Altitude (m)", xlab = "Latitude (degrees)")
 ```
 
-
+<!--
 > ** Question 3 **: If you would like to sample height data per province randomly, what would you need to do?
+-->
 
 
 # Exercise 7: The greenest municipality
@@ -463,7 +467,7 @@ Visualize the results using maps with proper titles, labels and legends.
 ## More details
 
 * You can use the MODIS NDVI data available [here](https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/MODIS.zip).
-* [Click here for more information about MODIS data used (i.e. MOD13A3)](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod13a3)
+* [Click here for more information about MODIS data used (i.e. MOD13A3)](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod13a3_v006)
 
 ```{block, type="alert alert-info"}
 **Hint** Use `nlMunicipality <- getData('GADM',country='NLD', level=2)`
