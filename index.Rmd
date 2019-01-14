@@ -119,12 +119,11 @@ Step by step we will:
 ```{r, eval=FALSE}
 library(raster)
 ## Download, unzip and load the data
-download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/landsat8.zip', destfile = 'landsat8.zip', method = 'auto')
+download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/landsat8.zip', destfile = 'data/landsat8.zip', method = 'auto')
 
-unzip('landsat8.zip')
+unzip('landsat8.zip', exdir = "data/")
 ## Identify the right file
-landsatPath <- list.files(pattern = glob2rx('LC8*.grd'), full.names = TRUE)
-
+landsatPath <- list.files(path = "data/", pattern = glob2rx('LC8*.grd'), full.names = TRUE)
 wagLandsat <- brick(landsatPath)
 ```
 
@@ -139,6 +138,7 @@ We can start by visualizing the data. Since it is a multispectral image, we can 
 ```{r, fig.align='center'}
 # plotRGB does not support negative values, so they need to be removed
 wagLandsat[wagLandsat < 0] <- NA
+names(wagLandsat) <- c("band1","band2","band3","band4","band5","band6","band7") # band names can change here
 plotRGB(wagLandsat, 5, 4, 3)
 ```
 
@@ -188,11 +188,11 @@ In the figure above, the left panel displays the output of `crop`, while the sec
 We also have a water mask of Wageningen in vector format. Let's download it and also reproject it to the CRS of the Landsat data.
 
 ```{r, eval=FALSE}
-download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/wageningenWater.zip', destfile = 'wageningenWater.zip', method = 'auto')
-unzip('wageningenWater.zip')
+download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/wageningenWater.zip', destfile = 'data/wageningenWater.zip', method = 'auto')
+unzip('data/wageningenWater.zip')
 ## Check the names of the layers for input in readOGR()
-ogrListLayers('Water.shp')
-water <- readOGR('Water.shp', layer = 'Water')
+ogrListLayers('data/Water.shp')
+water <- readOGR('data/Water.shp', layer = 'Water')
 waterUTM <- spTransform(water, CRS(proj4string(wagLandsat)))
 ```
 
