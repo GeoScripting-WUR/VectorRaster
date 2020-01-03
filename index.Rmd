@@ -1,9 +1,9 @@
 ---
 author: "Loïc Dutrieux, Jan Verbesselt, Dainius Masiliunas and David Swinkels"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
+pagetitle: "Raster Vector integration in R"
 output:
   knitrBootstrap::bootstrap_document:
-    title: "Raster Vector integration in R"
     theme: "simplex"
     highlight: Tomorrow Night Bright
     menu: FALSE
@@ -11,8 +11,9 @@ output:
     highlight.chooser: TRUE
 ---
 
-# [WUR Geoscripting](https://geoscripting-wur.github.io/) <img src="http://www.wur.nl/upload/b43b7095-e452-482a-8969-fed9a50393a8_WUR_RGB_standard.png" alt="WUR logo" style="height: 35px;"/>
+# [WUR Geoscripting](https://geoscripting-wur.github.io/) <img src="https://www.wur.nl/upload/5e55a1d9-47c3-4149-9384-26d5147ee2d7_WUR_RGB_standard.png" alt="WUR logo" style="height: 35px;"/>
 
+<!--
 # Today
 
 Time  | Activity
@@ -21,6 +22,7 @@ Until 11:00 | Review yesterday's exercise answer of the other team
 Morning       |  Self-study: go through the following tutorial
 14:00 to 15:00  | Discussion
 Rest of the afternoon | Do and finalise the exercise
+-->
 
 # Today's learning objectives
 
@@ -38,7 +40,7 @@ In this previous vector tutorial we used *sf*, but another popular package that 
 
 # Working with *sp*
 
-The package *sp* provides classes for spatial-only geometries, such as `SpatialPoints` (for points), and combinations of geometries and attribute data, such as a `SpatialPointsDataFrame`. These data classes are very similar to [data classes in *sf* package](http://geoscripting-wur.github.io/IntroToVector/). The following data classes are available for spatial vector data in *sp* package [@Edzer:2005ux]:
+The package *sp* provides classes for spatial-only geometries, such as `SpatialPoints` (for points), and combinations of geometries and attribute data, such as a `SpatialPointsDataFrame`. These data classes are very similar to [data classes in *sf* package](http://geoscripting-wur.github.io/IntroToVector/). The following data classes are available for spatial vector data in *sp* package:
 
 | Geometry      | class                     | attribute     |
 |-------------  |-----------------          |-------------  |
@@ -55,7 +57,7 @@ The package *sp* provides classes for spatial-only geometries, such as `SpatialP
 
 Table:  Overview of *sp* package spatial-only geometry classes.
 
-The functions of the *sp* package work together with functions in *rgdal*, *rgeos* and *raster* package to format changes, geomety selections or transformations and raster/vector format changes.
+The functions of the *sp* package work together with functions in *rgdal*, *rgeos* and *raster* package to format changes, geometry selections or transformations and raster/vector format changes.
 
 # Conversions
 
@@ -419,7 +421,7 @@ plot(sRandomData$latitude,sRandomData$altitude, ylab = "Altitude (m)", xlab = "L
 
 <!--
 > ** Question 3 **: If you would like to sample height data per province randomly, what would you need to do?
--->
+
 
 
 # Exercise 7: The greenest municipality
@@ -496,5 +498,5 @@ You can earn the bonus points by finding and mapping the greenest province in Ja
 Make sure your script is clear and reproducible. Make a new GitLab project and upload the script there according to the guidelines on BlackBoard. Review the script of another team (see the random team selector Shiny app) tomorrow morning and add an issue t their project with your feedback.
 
 Do not forget to add your teamname, members and date at the top of your script.
-
+-->
 
