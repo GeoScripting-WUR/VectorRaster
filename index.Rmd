@@ -38,28 +38,9 @@ At the end of the lecture, you should be able to:
 
 In the previous lectures we saw how to deal with [raster](http://geoscripting-wur.github.io/IntroToRaster/) data using R, as well as how to deal with [vector](http://geoscripting-wur.github.io/IntroToVector/) data and the multiple classes of the *sf* package.
 
-In this previous vector tutorial we used *sf*, but another popular package that handles vector data in R is *sp*. *sp* is similar to *sf*, but it is able to work with vector data and raster data through the *raster* package. In the current lesson, we'll see what can be done when the two worlds of vector data and raster data intersect. Secondly we will learn how to change *sf* objects to *sp* objects.
+# Working with *sf*
 
-# Working with *sp*
-
-The package *sp* provides classes for spatial-only geometries, such as `SpatialPoints` (for points), and combinations of geometries and attribute data, such as a `SpatialPointsDataFrame`. These data classes are very similar to [data classes in *sf* package](http://geoscripting-wur.github.io/IntroToVector/). The following data classes are available for spatial vector data in *sp* package:
-
-| Geometry      | class                     | attribute     |
-|-------------  |-----------------          |-------------  |
-| points        | *SpatialPoints*           | No            |
-| points        | *SpatialPointsDataFrame*  | data.frame   |
-| line          | *Line*                    | No           |
-| lines         | *Lines*                   | No           |
-| lines         | *SpatialLines*            | No           |
-| lines         | *SpatialLinesDataFrame*   | data.frame      |
-| rings         | *Polygon*                    | No           |
-| rings         | *Polygons*                   | No           |
-| rings         | *SpatialPolygons*            | No           |
-| rings         | *SpatialPolygonsDataFrame*   | data.frame   |
-
-Table:  Overview of *sp* package spatial-only geometry classes.
-
-The functions of the *sp* package work together with functions in *rgdal*, *rgeos* and *raster* package to format changes, geometry selections or transformations and raster/vector format changes.
+As you discovered in the previous exercise, the *sf* (simple features) package provides a set of tools for working with geospatial vectors, i.e. points, lines and polygons. The *sf* package conforms to the open standard ISO 19125-1:2004, which is widely implemented in spatial databases and GIS software. Check back to remind yourself of the available classes *sf* offers if you need to [data classes in *sf* package](http://geoscripting-wur.github.io/IntroToVector/). With this link you will find a [handy 'cheatsheet'](https://github.com/rstudio/cheatsheets/blob/master/sf.pdf) for spatial operations with *sf*. The functions of the *sf* package are prefixed by `st_`, short for 'spatial type'.  
 
 # Conversions
 
@@ -69,7 +50,7 @@ As a result, because these functions are only useful for some very particular si
 
 ## Vector to raster
 
-There is one function that allows to convert an object in vector to a raster object. It is the `rasterize()` function.
+There is one function that allows to convert a vector object to a raster object. It is the `rasterize()` function.
 
 ## Raster to vector
 
@@ -122,6 +103,7 @@ Step by step we will:
 
 ```{r, eval=FALSE}
 library(raster)
+library(sf)
 ## Download, unzip and load the data
 download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/landsat8.zip', destfile = 'data/landsat8.zip', method = 'auto')
 
@@ -133,6 +115,7 @@ wagLandsat <- brick(landsatPath)
 
 ```{r, echo=FALSE}
 library(raster)
+library(sf)
 wagLandsat <- brick('data/LC81970242014109LGN00.grd')
 ```
 
@@ -142,24 +125,29 @@ We can start by visualizing the data. Since it is a multispectral image, we can 
 ```{r, fig.align='center'}
 # plotRGB does not support negative values, so they need to be removed
 wagLandsat[wagLandsat < 0] <- NA
-names(wagLandsat) <- c("band1","band2","band3","band4","band5","band6","band7") # band names can change here
-plotRGB(wagLandsat, 5, 4, 3)
+names(wagLandsat) <- c("band1","band2","band3","band4","band5","band6","band7") # band names can be changed here
+plotRGB(wagLandsat, 5, 4, 3) # select which bands to assign to the red, green, and blue colour channels
 ```
 
 ```{r}
 ## Download municipality boundaries
 nlCity <- raster::getData('GADM',country='NLD', level=2)
 class(nlCity)
+
+## Convert nlCity to an sf object
+nlCitySf <- sf::st_as_sf(nlCity)
+
 ## Investigate the structure of the object
-head(nlCity@data)
+head(nlCitySf)
 ```
 
-It seems that the municipality names are in the `NAME_2` column. So we can subset the `SpatialPolygonsDataFrame` to the city of Wageningen alone. To do so we can use simple data frame manipulation/subsetting syntax.
+It seems that the municipality names are in the `NAME_2` column. So we can subset the `sf DataFrame` to the city of Wageningen alone. To do so we can use simple data frame manipulation/subsetting syntax.
 
 
 ```{r}
-nlCity@data <- nlCity@data[!is.na(nlCity$NAME_2),] # Remove rows with NA
-wagContour <- nlCity[nlCity$NAME_2 == 'Wageningen',]
+nlCitySf <- nlCitySf[!is.na(nlCitySf$NAME_2),] # Remove rows with NA
+
+wagContour <- nlCitySf[nlCitySf$NAME_2 == 'Wageningen',] # Filter Wageningen
 ```
 
 We can use the resulting `wagContour` object, to mask the values out of Wageningen, but first, since the two objects are in different coordinate systems, we need to reproject the projection of one to the other.
@@ -169,9 +157,11 @@ We can use the resulting `wagContour` object, to mask the values out of Wagening
 ```
 
 ```{r, message=FALSE}
-## Load rgdal library (needed to reproject data)
-library(rgdal)
-wagContourUTM <- spTransform(wagContour, CRS(proj4string(wagLandsat)))
+## Get the target CRS from the wagLandsat raster object
+targetCRS <- sf::st_crs(wagLandsat)
+
+## use sf to transform wagContour to the same projection as wagLandsat
+wagContourUTM <- sf::st_transform(wagContour, targetCRS)
 ```
 
 Now that the two objects are in the same CRS, we can do the masking and visualize the result. Let's first crop and then mask, to see the difference.
@@ -184,7 +174,7 @@ wagLandsatSub <- mask(wagLandsat, wagContourUTM)
 opar <- par(mfrow=c(1,2))
 plotRGB(wagLandsatCrop, 5, 4, 3)
 plotRGB(wagLandsatSub, 5, 4, 3)
-plot(wagContourUTM, add = TRUE, border = "green", lwd = 3)
+plot(wagContourUTM, add = TRUE, border='green', col='transparent', lwd = 3) # set fill colour to transparent
 ## Reset graphical parameters
 par(opar)
 ```
@@ -196,15 +186,18 @@ We also have a water mask of Wageningen in vector format. Let's download it and 
 ```{r, eval=FALSE}
 download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/wageningenWater.zip', destfile = 'data/wageningenWater.zip', method = 'auto')
 unzip('data/wageningenWater.zip', exdir = "data")
-## Check the names of the layers for input in readOGR()
-ogrListLayers('data/Water.shp')
-water <- readOGR('data/Water.shp', layer = 'Water')
-waterUTM <- spTransform(water, CRS(proj4string(wagLandsat)))
+
+## Load the Water Shapefile directly as an sf object
+water <- sf::st_read('data/Water.shp')
+names(water) ## check attribute columns
+
+## Transform the water object to match the projection of our other data
+waterUTM <- sf::st_transform(water, targetCRS)
 ```
 
 ```{r, echo=FALSE}
-water <- readOGR('data/Water.shp', layer = 'Water')
-waterUTM <- spTransform(water, CRS(proj4string(wagLandsat)))
+water <- sf::st_read('data/Water.shp')
+waterUTM <- sf::st_transform(water, targetCRS)
 ```
 
 Note the use of `inverse = TRUE` in the code below, to *mask* the pixels that intersect with the features of the vector object.
@@ -213,17 +206,25 @@ Note the use of `inverse = TRUE` in the code below, to *mask* the pixels that in
 ```{r, fig.align='center'}
 wagLandsatSubW <- mask(wagLandsatSub, mask = waterUTM, inverse = TRUE)
 plotRGB(wagLandsatSubW, 5, 4, 3)
-plot(waterUTM, col = 'blue', add = TRUE, border = 'blue', lwd = 2)
+plot(waterUTM, col = 'lightblue', add = TRUE, border = '#3A9AF0', lwd = 1)   # use a site such as https://htmlcolorcodes.com/ to find the hexidecimal code for colours
 ```
 
-For the rest of the example, we'll use the `wagLandsatCrop` object, for I have a few doubts about the spatial accuracy of the two vector layers we used in the masking steps. You can check for yourself by converting them to KML and opening them in Google My Maps. (Let us know during the lesson, what do you think? Any solutions?)
+For the rest of the example, we'll use the `wagLandsatCrop` object, for we have a few doubts about the spatial accuracy of the two vector layers we used in the masking steps. You can check for yourself by converting them to KML and opening them in Google My Maps. (Let us know during the lesson, what do you think? Any solutions?)
 
 ### Build a calibration dataset in Google Maps
-Below we'll see how we can deal with a calibration dataset in R, for calibrating a classifier. It involves working with `SpatialPointsDataFrame` classes, extracting reflectance data for the corresponding calibration samples, manipulating data frames and building a model that can be used to predict land cover. But first we need to build the calibration dataset (ground truth), and for that we will use Google Maps.
+Below we'll see how we can deal with a calibration dataset in R, for calibrating a classifier. It involves working with `sf DataFrame` classes, extracting reflectance data for the corresponding calibration samples, manipulating data frames and building a model that can be used to predict land cover. But first we need to build the calibration dataset (ground truth), and for that we will use Google Maps.
 
-Open [Google My Maps](https://www.google.com/maps/about/mymaps/), click *get started*, login on your Google account, create a new map by clicking on the *+* sign, name the map training_landcover, name the untitled layer *landcover_points*, change the basemap to a satellite map, click *add marker*, draw points on top of a few landcover types, and name the point as the land cover type. Try to keep your points close to Wageningen (otherwise they are out of the extent of the landsat tile). Keep it to a few classes, such as `agric`, `forest`, `water`, `urban`. When you are done (15 - 30 points), export the file to KML.
+To begin with, make a KML of the study area extent which we will use as a guide.
 
-**Note:** in the approach described above, we get to decide where the calibration samples are. Another approach would be to automatically generate randomly distributed samples. This can be done very easily in R using the `sampleRandom()` function, which automatically returns a `SpatialPoints` object of any given size. In the family of spatial sampling functions, there is also `sampleRegular()` (for regular sampling) and `sampleStratified()`, which can be used on a categorical raster (e.g. a land cover classification), to ensure that all classes are equally represented in the sample.
+```{r, echo=FALSE}
+# get bounding box of cropped raster and export it as KML
+wagLandsatCropBbox <- sf::st_as_sfc(st_bbox(wagLandsatCrop))
+st_write(wagLandsatCropBbox, "wagLandsatCropBbox.kml", driver = "kml")
+```
+
+Open [Google My Maps](https://www.google.com/maps/about/mymaps/), click *get started*, login on your Google account, create a new map by clicking on the *+* sign, name the map training_landcover, under *Untitled layer* click *Import* and find the KML file that you just created. You will see a rectangle of the study area appear on the map with the name *wagLandsatCropBbox*, click *Add layer*, name the new, untitled layer *landcover_points*, change the basemap to a satellite map, click *Add marker*, draw points on top of a few landcover types, and name the point as the land cover type. Keep your points within the bounding box (the wagLandsatCropBbox layer), otherwise they are out of the extent of the Landsat tile. Keep it to a few classes, such as `agriculture`, `forest`, `water`, `urban`. When you are done (15 - 30 points, with at least 5 points for each class), export the file to KML.
+
+**Note:** in the approach described above, we get to decide where the calibration samples are. Another approach would be to automatically generate randomly distributed samples. This can be done very easily in R using the `sf::st_sample()` function, which automatically returns a `sfc` (simple feature collection) object of any given size. Options for the `sf::st_sample()` include `type = regular` (for regular sampling) and `by_polygon = TRUE` for stratified sampling, to ensure that all classes (of a landcover classification) are equally represented in the sample using `multipolygon` delimiters. [See the documentation](https://www.rdocumentation.org/packages/sf/versions/0.9-6/topics/st_sample) for a more detailed explanation.
 
 ### Transform *sf* object into *sp* object
 
@@ -232,48 +233,30 @@ Until now in this tutorial we worked with *sp* vector objects. But in the previo
 Load the newly created KML file using the `st_read()` function.
 
 ```{r}
-library(sf)
-samples <- st_read(dsn = './data/sampleLandcover.kml')
+samples <- sf::st_read(dsn = './data/sampleLandcover.kml')
 ```
 
-Okay, nice, the data has been read as a simple feature. Re-project the object to the CRS of the Landsat data and then change from simple feature point object to a spatial points data frame with `as()`. The `as()` function is a simple function to coerce an object to belong to a class.
+Okay, nice, the data has been read as a simple feature. Re-project the object to the CRS of the Landsat data.
 
 ```{r}
-## Re-project SpatialPointsDataFrame
-samples_utm <- st_transform(samples, crs = proj4string(wagLandsat))
-
-## Convert simple feature from *sf* package
-# to spatial feature of *sp* package
-samples_utm_sp <- as(samples_utm, "Spatial")
+## Re-project sf DataFrame
+samplesUTM <- sf::st_transform(samples, targetCRS)
 ```
-
-
-```{r}
-## Check if the classes are different
-class(samples_utm)
-class(samples_utm_sp)
-```
-
-```{r}
-## Check if the markers are on top of the cropped satellite image
-plot(samples_utm_sp, col = "red", pch = 4)
-plot(wagLandsatCrop$band1, alpha = 0.5, legend = F, add = T)
-# alpha arguments sets transparency on a scale of 0.0 to 1.0
-```
-
-Luckily all the points are within the boundaries of the cropped satellite image. If some points fall outside, remove those markers in your KML in Google maps and add some new ones.
 
 ### Calibrate the classifier
 ```{r}
-# The extract function does not understand why the object would have 3 coord columns, so we need to edit this field
-samples_utm_sp@coords <- coordinates(samples_utm_sp)[,-3]
-
 ## Extract the surface reflectance
-calib <- extract(wagLandsatCrop, samples_utm_sp, df=TRUE) ## df=TRUE i.e. return as a data.frame
+calib <- raster::extract(wagLandsatCrop, samplesUTM, df=TRUE) ## df=TRUE i.e. return as a data.frame
+
 ## Combine the newly created dataframe to the description column of the calibration dataset
-calib2 <- cbind(samples_utm_sp$Name, calib)
+calib2 <- cbind(samplesUTM$Name, calib)
+
 ## Change the name of the first column, for convenience
 colnames(calib2)[1] <- 'lc'
+
+## Make the lc column into a factor
+calib2$lc <-as.factor(calib2$lc)
+
 ## Inspect the structure of the dataframe
 str(calib2)
 ```
@@ -435,7 +418,7 @@ Last week end, on a rainy Saturday afternoon in Wageningen, my friend and I deci
 
 I was shocked, not only this had absolutely nothing to do with our conversation, but also I had always thought that Wageningen was the greenest city in The Netherlands. At least that's what I wanted to believe. So that I responded:
 
-*'No way man, it can't be greener than Wageningen. Wageningen is way greener than Hoenderloo.'* Insisting on the "way" and pronouncing Hoenderloo in an english way.
+*'No way man, it can't be greener than Wageningen. Wageningen is way greener than Hoenderloo.'* Insisting on the "way" and pronouncing Hoenderloo in an English way.
 
 *'Are you sure?'*
 
