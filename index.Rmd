@@ -24,6 +24,8 @@ Morning       |  Self-study: go through the following tutorial
 Rest of the afternoon | Do and finalise the exercise
 -->
 
+# Week 2, Lesson 6: Raster - Vector integration in R
+
 # Today's learning objectives
 
 At the end of the lecture, you should be able to:
@@ -34,9 +36,9 @@ At the end of the lecture, you should be able to:
 
 # Introduction
 
-In the previous lectures we saw how to deal with [raster](http://geoscripting-wur.github.io/IntroToRaster/) data using R, as well as how to deal with [vector](http://geoscripting-wur.github.io/IntroToVector/) data and the multiple classes of the *sf* package. 
+In the previous lectures we saw how to deal with [raster](http://geoscripting-wur.github.io/IntroToRaster/) data using R, as well as how to deal with [vector](http://geoscripting-wur.github.io/IntroToVector/) data and the multiple classes of the *sf* package.
 
-In this previous vector tutorial we used *sf*, but another popular package that handles vector data in R is *sp*. *Sp* is similar to *sf*, but it is able to work with vector data and raster data through the *raster* package. In the current lesson, we'll see what can be done when the two worlds of vector data and raster data intersect. Secondly we will learn how to change *sf* objects to *sp* objects.
+In this previous vector tutorial we used *sf*, but another popular package that handles vector data in R is *sp*. *sp* is similar to *sf*, but it is able to work with vector data and raster data through the *raster* package. In the current lesson, we'll see what can be done when the two worlds of vector data and raster data intersect. Secondly we will learn how to change *sf* objects to *sp* objects.
 
 # Working with *sp*
 
@@ -90,7 +92,7 @@ You can easily define an extent interactively (by clicking) thanks to the `drawE
 `mask()` can be used with almost all spatial objects to mask (= set to `NA`) values of a raster object. When used with a `SpatialPolygon` object, `mask` will keep values of the raster overlayed by polygons and mask the values outside of polygons.
 
 Note the very useful `inverse=` argument of `mask()`, which allows to mask the inverse of the area covered by the features. We will use this feature of mask later in the tutorial to exclude water areas of a raster, defined in an independent `SpatialPolygons` object.
- 
+
 ## Extract
 
 The most common operation when combining vector and raster data is the extraction. It simply consists in extracting the values of a raster object for locations specified by a vector object. The object can be one of the classes of the *sp* package, or an `extent` object.
@@ -219,7 +221,7 @@ For the rest of the example, we'll use the `wagLandsatCrop` object, for I have a
 ### Build a calibration dataset in Google Maps
 Below we'll see how we can deal with a calibration dataset in R, for calibrating a classifier. It involves working with `SpatialPointsDataFrame` classes, extracting reflectance data for the corresponding calibration samples, manipulating data frames and building a model that can be used to predict land cover. But first we need to build the calibration dataset (ground truth), and for that we will use Google Maps.
 
-Open [Google My Maps](https://www.google.com/maps/about/mymaps/), click *get started*, login on your google account, create a new map by clicking on the *+* sign, name the map training_landcover, name the untitled layer *landcover_points*, change the basemap to a satellite map, click *add marker*, draw points on top of a few landcover types, and name the point as the land cover type. Try to keep your points close to Wageningen (otherwise they are out of the extent of the landsat tile). Keep it to a few classes, such as `agric`, `forest`, `water`, `urban`. When you are done (15 - 30 points), export the file to kml.
+Open [Google My Maps](https://www.google.com/maps/about/mymaps/), click *get started*, login on your Google account, create a new map by clicking on the *+* sign, name the map training_landcover, name the untitled layer *landcover_points*, change the basemap to a satellite map, click *add marker*, draw points on top of a few landcover types, and name the point as the land cover type. Try to keep your points close to Wageningen (otherwise they are out of the extent of the landsat tile). Keep it to a few classes, such as `agric`, `forest`, `water`, `urban`. When you are done (15 - 30 points), export the file to KML.
 
 **Note:** in the approach described above, we get to decide where the calibration samples are. Another approach would be to automatically generate randomly distributed samples. This can be done very easily in R using the `sampleRandom()` function, which automatically returns a `SpatialPoints` object of any given size. In the family of spatial sampling functions, there is also `sampleRegular()` (for regular sampling) and `sampleStratified()`, which can be used on a categorical raster (e.g. a land cover classification), to ensure that all classes are equally represented in the sample.
 
@@ -227,7 +229,7 @@ Open [Google My Maps](https://www.google.com/maps/about/mymaps/), click *get sta
 
 Until now in this tutorial we worked with *sp* vector objects. But in the previous tutorial we learnt how to use *sf* functionality. When combining raster and vector data with functions such as extract, mask and crop, you need to work with *sp* and *raster* packages instead of *sf*. Let's transform  a *sf* object into a *sp* object.
 
-Load the newly created KML file using the `st_read()` function. 
+Load the newly created KML file using the `st_read()` function.
 
 ```{r}
 library(sf)
@@ -240,7 +242,7 @@ Okay, nice, the data has been read as a simple feature. Re-project the object to
 ## Re-project SpatialPointsDataFrame
 samples_utm <- st_transform(samples, crs = proj4string(wagLandsat))
 
-## Convert simple feature from *sf* package 
+## Convert simple feature from *sf* package
 # to spatial feature of *sp* package
 samples_utm_sp <- as(samples_utm, "Spatial")
 ```
@@ -259,14 +261,14 @@ plot(wagLandsatCrop$band1, alpha = 0.5, legend = F, add = T)
 # alpha arguments sets transparency on a scale of 0.0 to 1.0
 ```
 
-Luckily all the points are within the boundaries of the cropped satellite image. If some points fall outside, remove those markers in your KML in google maps and add some new ones.
+Luckily all the points are within the boundaries of the cropped satellite image. If some points fall outside, remove those markers in your KML in Google maps and add some new ones.
 
 ### Calibrate the classifier
 ```{r}
 # The extract function does not understand why the object would have 3 coord columns, so we need to edit this field
 samples_utm_sp@coords <- coordinates(samples_utm_sp)[,-3]
 
-## Extract the surface reflectance 
+## Extract the surface reflectance
 calib <- extract(wagLandsatCrop, samples_utm_sp, df=TRUE) ## df=TRUE i.e. return as a data.frame
 ## Combine the newly created dataframe to the description column of the calibration dataset
 calib2 <- cbind(samples_utm_sp$Name, calib)
@@ -340,7 +342,7 @@ plot(bel)
 plot(line, col = 'red', add = TRUE)
 ```
 
-Then the elevation values can simply be extracted using `extract()`. Note the use of the `along=` argument which ensures that the samples remain in order along the segment. 
+Then the elevation values can simply be extracted using `extract()`. Note the use of the `along=` argument which ensures that the samples remain in order along the segment.
 
 ```{r}
 alt <- extract(bel, line, along = TRUE)
@@ -430,32 +432,32 @@ plot(sRandomData$latitude,sRandomData$altitude, ylab = "Altitude (m)", xlab = "L
 Last week end, on a rainy Saturday afternoon in Wageningen, my friend and I decided to go for a coffee. We had met at the market, while shopping for fresh vegetables, when we thought of moving to a warmer and drier place to catch up a bit since last time we had met a month ago. We were both sitting in the cafe; me by the window and he, sitting on the opposite side of the table, facing the rest of the busy room. The chattering of the crown behind me, mixed with the clinking of glasses and the hissing sound of the espresso machine releasing its vapour was giving the feeling of an old movie to the place. The rain beating the window was only adding to this atmosphere. As we were discussing, I was contemplating the rain drops rolling down the glass, on the other side of the window; gaining speed and chasing each others on the smooth surface, then being pushed out of their trajectory by a sudden burst of wind, and gaining momentum again. He suddently exclaimed:
 
 *'Did you know that Hoenderloo is the greenest city in the Netherlands?'*
-  
+
 I was shocked, not only this had absolutely nothing to do with our conversation, but also I had always thought that Wageningen was the greenest city in The Netherlands. At least that's what I wanted to believe. So that I responded:
-  
+
 *'No way man, it can't be greener than Wageningen. Wageningen is way greener than Hoenderloo.'* Insisting on the "way" and pronouncing Hoenderloo in an english way.
-  
+
 *'Are you sure?'*
-  
+
 *'Definitely!'* I had no idea.
-  
+
 To what he responded, noticing my bluffing face:
-  
+
 *'Haha, if only we could check.'*
-  
+
 ''If only ...'', these two words kept bouncing in my mind. So much that I could not follow the rest of our conversation. Whether he was talking about the influence of China on Wageningen architecture, the maximum speed of a Leopard chasing a Gazelle, his last trip to Bolivia or the true origin of the french fries name, I do not remember. I was obsessed by this thought; how could I find which was the greenest place? He did most of the talking, while my mind was trying to organize the ideas and sort preliminary hypotheses. When suddently he got my attention again:
-  
+
 *'Hey let's go!'*
-  
+
 The rain had stopped. We got up, paid our coffees to the counter, exited the cafe and each started walking in a different direction. I had almost reached the end of the street when I turned around and shouted in his direction.
-  
+
 *'I think we can check!'*
-  
+
 *'Check what?'*
-  
+
 I gave him a sign with my arm indicating that it didn't matter and kept walking home.
 
-## Your task 
+## Your task
 
 Please help me find out which "municipality" in the Netherlands was the greenest:
 
@@ -499,4 +501,3 @@ Make sure your script is clear and reproducible. Make a new GitLab project and u
 
 Do not forget to add your teamname, members and date at the top of your script.
 -->
-
