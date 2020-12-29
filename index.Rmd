@@ -102,6 +102,9 @@ Step by step we will:
 ### Prepare the data
 
 ```{r, eval=FALSE}
+if(!"raster" %in% rownames(installed.packages())){install.packages("raster")}
+if(!"sf" %in% rownames(installed.packages())){install.packages("sf")}
+
 library(raster)
 library(sf)
 ## Download, unzip and load the data
@@ -222,7 +225,7 @@ wagLandsatCropBbox <- sf::st_as_sfc(st_bbox(wagLandsatCrop))
 st_write(wagLandsatCropBbox, "wagLandsatCropBbox.kml", driver = "kml")
 ```
 
-Open [Google My Maps](https://www.google.com/maps/about/mymaps/), click *get started*, login on your Google account, create a new map by clicking on the *+* sign, name the map training_landcover, under *Untitled layer* click *Import* and find the KML file that you just created. You will see a rectangle of the study area appear on the map with the name *wagLandsatCropBbox*, click *Add layer*, name the new, untitled layer *landcover_points*, change the basemap to a satellite map, click *Add marker*, draw points on top of a few landcover types, and name the point as the land cover type. Keep your points within the bounding box (the wagLandsatCropBbox layer), otherwise they are out of the extent of the Landsat tile. Keep it to a few classes, such as `agriculture`, `forest`, `water`, `urban`. When you are done (15 - 30 points, with at least 5 points for each class), export the file to KML.
+Open [Google My Maps](https://www.google.com/maps/about/mymaps/), click *get started*, login on your Google account, create a new map by clicking on the *+* sign, name the map training_landcover, under *Untitled layer* click *Import* and find the KML file that you just created. You will see a rectangle of the study area appear on the map with the name *wagLandsatCropBbox*, click *Add layer*, name the new, untitled layer *landcover_points*, change the basemap to a satellite map, click *Add marker*, draw points on top of a few landcover types, and name the point as the land cover type. Keep your points within the bounding box (the *wagLandsatCropBbox* layer), otherwise they are out of the extent of the Landsat tile. Keep it to a few classes, such as `agriculture`, `forest`, `water`, `urban`. When you are done (15 - 30 points, with at least 5 points for each class), export the file to KML.
 
 **Note:** in the approach described above, we get to decide where the calibration samples are. Another approach would be to automatically generate randomly distributed samples. This can be done very easily in R using the `sf::st_sample()` function, which automatically returns a `sfc` (simple feature collection) object of any given size. Options for the `sf::st_sample()` include `type = regular` (for regular sampling) and `by_polygon = TRUE` for stratified sampling, to ensure that all classes (of a landcover classification) are equally represented in the sample using `multipolygon` delimiters. [See the documentation](https://www.rdocumentation.org/packages/sf/versions/0.9-6/topics/st_sample) for a more detailed explanation.
 
@@ -322,10 +325,10 @@ line <- drawLine()
 ```{r, echo=FALSE, fig.align='center'}
 line <- readRDS('data/line.rds')
 plot(bel)
-plot(line, col = 'red', add = TRUE)
+line <- drawLine() # click the start and end locations on the plot and press escape to finish line
 ```
 
-Then the elevation values can simply be extracted using `extract()`. Note the use of the `along=` argument which ensures that the samples remain in order along the segment.
+Then the elevation values can simply be extracted using `raster::extract()`. Note the use of the `along=` argument which ensures that the samples remain in order along the segment.
 
 ```{r}
 alt <- extract(bel, line, along = TRUE)
@@ -340,27 +343,52 @@ plot(alt[[1]], type = 'l', ylab = "Altitude (m)")
 In order to make an index for the x axis, we can calculate the distance between the two extremities of the transect, using `distHaversine()` from the *geosphere* package.
 
 ```{r}
-if(!require(geosphere)) {
-  install.packages("geosphere")
-}
+# check for the geosphere package and install if missing
+if(!"geosphere" %in% rownames(installed.packages())){install.packages("geosphere")}
+```
+
+```{r}
 library(geosphere)
-## Calculate great circle distance between the two ends of the line
-dist <- distHaversine(coordinates(line)[[1]][[1]][1,], coordinates(line)[[1]][[1]][2,])
-## Format an array for use as x axis index with the same length as the alt[[1]] array
-distanceVector <- seq(0, dist, along.with = alt[[1]])
-```
 
+## convert line to sf and assign the crs
+line2 <- st_as_sf(line)
+st_crs(line2) <- 4326
+
+## Use sf to calculate the Great Circle distance between the two ends of the line
+dist_sf <- st_length(line2,
+                   which = ifelse(isTRUE(st_is_longlat(line2)), "Great Circle", "Euclidean")) ## st_is_longlat() returns true so which='Great Circle' option is used
+
+
+## Use geosphere to calculate the Great Circle distance between the two ends of the line
+start <- sf::st_coordinates(line2)[1,1:2] ## get the coordinate pairs for the start and end of the line
+end <-   sf::st_coordinates(line2)[2,1:2]
+
+dist_geosphere <- distHaversine(start,end)
+
+## print the results
+writeLines(c(paste0(as.integer(dist_sf), "m - sf Great Circle [WGS coords]"), paste0(as.integer(dist_geosphere), "m - geosphere Great Circle [WGS coords]")))
+
+```
 ```{block, type="alert alert-success"}
-> **Question 2:** Why can't we simply use the `LineLength()` function from the *sp* package?
+> **Question 2:** Why is there a difference between the line lengths calculated by *sf* and *geosphere*?
 ```
 
-*Hint:* look at the `CRS` in which we are working, and at the help page of the `distHaversine()` function. Also see the `distVincentyEllipsoid()` function. Does this one provide a more accurate distance?
+*Hint:* Look at the help page of the `distHaversine()` function. Also see the `distVincentyEllipsoid()` function. Does this one provide a more accurate distance?
 
 Note that there is a small approximation on the position of the line and the distances between the samples as the real shortest path between two points is not a straight line in lat-long, while the distance we just calculated is the shortest path. For short distances, as in the example, this is acceptable.
 Otherwise, we could also have:
 
 - Projected the raster and the line to a projected coordinate system, or
-- Made a true greatCircle line using `greatCircle()` from the sp package and extracted the elevation values from it.
+- Made a true greatCircle line using `greatCircle()` from the and extracted the elevation values from it.
+
+Calculating long distances accurately on an imperfect spheroid is very tricky. The *geosphere distHaversine()* assumes a perfectly spherical projection. Take care when using these functions that you understand how the distance is being calculated and what implications that may have for your work.
+
+We will continue using the distance calculated by *sf*
+
+```{r}
+## Format an array for use as x axis index with the same length as the alt[[1]] array
+distanceVector <- seq(0, as.numeric(dist_sf), along.with = alt[[1]])
+```
 
 Let's now visualize the final output.
 
@@ -383,7 +411,7 @@ Below is an extra example and a simplification of the random sample demo showed 
 ```{r}
 # You can choose your own country here
 bel <- getData('alt', country='BEL', mask=TRUE) ## SRTM 90m height data
-belshp <- getData('GADM', country='BEL', level=2) ## administrative boundaries
+belAdmin <- getData('GADM', country='BEL', level=2) ## administrative boundaries
 
 ## Sample the raster randomly with 40 points
 sRandomBel <- sampleRandom(bel, na.rm=TRUE, sp=TRUE, size = 40)
@@ -397,7 +425,7 @@ sRandomData <- data.frame(altitude = sRandomBel@data[[1]],
 ```{r, fig.align='center', fig.show='hold'}
 ## Plot
 plot(bel)
-plot(belshp, add=TRUE)
+plot(belAdmin, add=TRUE)
 plot(sRandomBel, add = TRUE, col = "red")
 
 ## Plot altitude versus latitude
