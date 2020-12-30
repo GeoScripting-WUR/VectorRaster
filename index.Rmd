@@ -54,7 +54,7 @@ There is one function that allows to convert a vector object to a raster object.
 
 ## Raster to vector
 
-Three functions allow to convert raster data to vector; the `rasterToPoints()`, `rasterToContour()`, and `rasterToPolygons()` functions. The latter can be useful to convert the result of a classification. In that case, set `dissolve =` to `TRUE` so that the polygons with the same attribute value will be dissolved into multi-polygon regions. This option requires the *rgeos* package. **Note**: These methods are known to perform poorly under R. Calling `gdal_translate` directly or through the *gdalUtils* package can be much faster.
+Three functions allow to convert raster data to vector; the `rasterToPoints()`, `rasterToContour()`, and `rasterToPolygons()` functions. The latter can be useful to convert the result of a classification. In that case, set `dissolve =` to `TRUE` so that the polygons with the same attribute value will be dissolved into multi-polygon regions. This option requires the *rgeos* package. **Note**: These methods are known to perform poorly under R. Using the `terra::as.polygons()` etc. functions from the *terra* package, which is a sucessor of the *raster* package, is much faster due to *terra* being written in C++ instead. Calling `gdal_translate` directly or through the *gdalUtils* package can also be much faster for the same reason.
 
 # Geometric operations
 
@@ -144,7 +144,7 @@ nlCitySf <- sf::st_as_sf(nlCity)
 head(nlCitySf)
 ```
 
-It seems that the municipality names are in the `NAME_2` column. So we can subset the `sf DataFrame` to the city of Wageningen alone. To do so we can use simple data frame manipulation/subsetting syntax.
+It seems that the municipality names are in the `NAME_2` column. So we can subset the `sf data.frame` to the city of Wageningen alone. To do so we can use simple data frame manipulation/subsetting syntax.
 
 
 ```{r}
@@ -215,7 +215,7 @@ plot(waterUTM, col = 'lightblue', add = TRUE, border = '#3A9AF0', lwd = 1)   # u
 For the rest of the example, we'll use the `wagLandsatCrop` object, for we have a few doubts about the spatial accuracy of the two vector layers we used in the masking steps. You can check for yourself by converting them to KML and opening them in Google My Maps. (Let us know during the lesson, what do you think? Any solutions?)
 
 ### Build a calibration dataset in Google Maps
-Below we'll see how we can deal with a calibration dataset in R, for calibrating a classifier. It involves working with `sf DataFrame` classes, extracting reflectance data for the corresponding calibration samples, manipulating data frames and building a model that can be used to predict land cover. But first we need to build the calibration dataset (ground truth), and for that we will use Google Maps.
+Below we'll see how we can deal with a calibration dataset in R, for calibrating a classifier. It involves working with `sf data.frame` classes, extracting reflectance data for the corresponding calibration samples, manipulating data frames and building a model that can be used to predict land cover. But first we need to build the calibration dataset (ground truth), and for that we will use Google Maps.
 
 To begin with, make a KML of the study area extent which we will use as a guide.
 
@@ -229,10 +229,6 @@ Open [Google My Maps](https://www.google.com/maps/about/mymaps/), click *get sta
 
 **Note:** in the approach described above, we get to decide where the calibration samples are. Another approach would be to automatically generate randomly distributed samples. This can be done very easily in R using the `sf::st_sample()` function, which automatically returns a `sfc` (simple feature collection) object of any given size. Options for the `sf::st_sample()` include `type = regular` (for regular sampling) and `by_polygon = TRUE` for stratified sampling, to ensure that all classes (of a landcover classification) are equally represented in the sample using `multipolygon` delimiters. [See the documentation](https://www.rdocumentation.org/packages/sf/versions/0.9-6/topics/st_sample) for a more detailed explanation.
 
-### Transform *sf* object into *sp* object
-
-Until now in this tutorial we worked with *sp* vector objects. But in the previous tutorial we learnt how to use *sf* functionality. When combining raster and vector data with functions such as extract, mask and crop, you need to work with *sp* and *raster* packages instead of *sf*. Let's transform  a *sf* object into a *sp* object.
-
 Load the newly created KML file using the `st_read()` function.
 
 ```{r}
@@ -242,7 +238,7 @@ samples <- sf::st_read(dsn = './data/sampleLandcover.kml')
 Okay, nice, the data has been read as a simple feature. Re-project the object to the CRS of the Landsat data.
 
 ```{r}
-## Re-project sf DataFrame
+## Re-project sf data.frame
 samplesUTM <- sf::st_transform(samples, targetCRS)
 ```
 
@@ -251,7 +247,7 @@ samplesUTM <- sf::st_transform(samples, targetCRS)
 ## Extract the surface reflectance
 calib <- raster::extract(wagLandsatCrop, samplesUTM, df=TRUE) ## df=TRUE i.e. return as a data.frame
 
-## Combine the newly created dataframe to the description column of the calibration dataset
+## Combine the newly created data.frame to the description column of the calibration dataset
 calib2 <- cbind(samplesUTM$Name, calib)
 
 ## Change the name of the first column, for convenience
@@ -260,7 +256,7 @@ colnames(calib2)[1] <- 'lc'
 ## Make the lc column into a factor
 calib2$lc <-as.factor(calib2$lc)
 
-## Inspect the structure of the dataframe
+## Inspect the structure of the data.frame
 str(calib2)
 ```
 
@@ -371,19 +367,16 @@ writeLines(c(paste0(as.integer(dist_sf), "m - sf Great Circle [WGS coords]"), pa
 ```
 ```{block, type="alert alert-success"}
 > **Question 2:** Why is there a difference between the line lengths calculated by *sf* and *geosphere*?
-```
 
 *Hint:* Look at the help page of the `distHaversine()` function. Also see the `distVincentyEllipsoid()` function. Does this one provide a more accurate distance?
+```
 
 Note that there is a small approximation on the position of the line and the distances between the samples as the real shortest path between two points is not a straight line in lat-long, while the distance we just calculated is the shortest path. For short distances, as in the example, this is acceptable.
-Otherwise, we could also have:
-
-- Projected the raster and the line to a projected coordinate system, or
-- Made a true greatCircle line using `greatCircle()` from the and extracted the elevation values from it.
+Otherwise, we could also have projected the raster and the line to a projected coordinate system.
 
 Calculating long distances accurately on an imperfect spheroid is very tricky. The *geosphere distHaversine()* assumes a perfectly spherical projection. Take care when using these functions that you understand how the distance is being calculated and what implications that may have for your work.
 
-We will continue using the distance calculated by *sf*
+We will continue using the distance calculated by *sf*.
 
 ```{r}
 ## Format an array for use as x axis index with the same length as the alt[[1]] array
@@ -406,7 +399,7 @@ plot(distanceVector/1000, alt[[1]], type = 'l',
 
 ## Extract raster values randomly using the `sampleRandom()` function
 
-Below is an extra example and a simplification of the random sample demo showed [here](https://geoscripting-wur.github.io/Scripting4Geo/). We will use the `sampleRandom()` function to randomly sample altitude information from a DEM of Belgium:
+Below is an extra example and a simplification of the random sample demo shown [here](https://geoscripting-wur.github.io/Scripting4Geo/). We will use the `sampleRandom()` function to randomly sample altitude information from a DEM of Belgium:
 
 ```{r}
 # You can choose your own country here
@@ -432,10 +425,11 @@ plot(sRandomBel, add = TRUE, col = "red")
 plot(sRandomData$latitude,sRandomData$altitude, ylab = "Altitude (m)", xlab = "Latitude (degrees)")
 ```
 
-<!--
+```{block, type="alert alert-success"}
 > ** Question 3 **: If you would like to sample height data per province randomly, what would you need to do?
+```
 
-
+<!--
 
 # Exercise 7: The greenest municipality
 
