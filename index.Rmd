@@ -222,7 +222,7 @@ To begin with, make a KML of the study area extent which we will use as a guide.
 ```{r, echo=FALSE}
 # get bounding box of cropped raster and export it as KML
 wagLandsatCropBbox <- sf::st_as_sfc(st_bbox(wagLandsatCrop))
-st_write(wagLandsatCropBbox, "wagLandsatCropBbox.kml", driver = "kml")
+st_write(wagLandsatCropBbox, "wagLandsatCropBbox.kml", driver = "kml", delete_dsn=TRUE)
 ```
 
 Open [Google My Maps](https://www.google.com/maps/about/mymaps/), click *get started*, login on your Google account, create a new map by clicking on the *+* sign, name the map training_landcover, under *Untitled layer* click *Import* and find the KML file that you just created. You will see a rectangle of the study area appear on the map with the name *wagLandsatCropBbox*, click *Add layer*, name the new, untitled layer *landcover_points*, change the basemap to a satellite map, click *Add marker*, draw points on top of a few landcover types, and name the point as the land cover type. Keep your points within the bounding box (the *wagLandsatCropBbox* layer), otherwise they are out of the extent of the Landsat tile. Keep it to a few classes, such as `agriculture`, `forest`, `water`, `urban`. When you are done (15 - 30 points, with at least 5 points for each class), export the file to KML.
@@ -321,7 +321,7 @@ line <- drawLine()
 ```{r, echo=FALSE, fig.align='center'}
 line <- readRDS('data/line.rds')
 plot(bel)
-line <- drawLine() # click the start and end locations on the plot and press escape to finish line
+plot(line, add=TRUE)
 ```
 
 Then the elevation values can simply be extracted using `raster::extract()`. Note the use of the `along=` argument which ensures that the samples remain in order along the segment.
@@ -426,7 +426,7 @@ plot(sRandomData$latitude,sRandomData$altitude, ylab = "Altitude (m)", xlab = "L
 ```
 
 ```{block, type="alert alert-success"}
-> ** Question 3 **: If you would like to sample height data per province randomly, what would you need to do?
+> **Question 3**: If you would like to sample height data per province randomly, what would you need to do?
 ```
 
 <!--
