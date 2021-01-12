@@ -107,12 +107,22 @@ if(!"sf" %in% rownames(installed.packages())){install.packages("sf")}
 
 library(raster)
 library(sf)
-## Download, unzip and load the data
-download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/landsat8.zip', destfile = 'data/landsat8.zip', method = 'auto')
 
-unzip('data/landsat8.zip', exdir = "data")
+## Assign filepaths to variables
+dataDir <- 'data/'
+ls8zip <- paste0(dataDir,"landsat8.zip")
+
+## Create data directory if it does not already exist
+if (!file.exists(dataDir)){
+ dir.create(file.path(dataDir))
+}
+
+## Download, unzip and load the data
+download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/landsat8.zip', destfile = ls8zip, method = 'auto')
+unzip(ls8zip, exdir = dataDir)
+
 ## Identify the right file
-landsatPath <- list.files(path = "data/", pattern = glob2rx('LC8*.grd'), full.names = TRUE)
+landsatPath <- list.files(path = dataDir, pattern = glob2rx('LC8*.grd'), full.names = TRUE)
 wagLandsat <- brick(landsatPath)
 ```
 
