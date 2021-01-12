@@ -219,7 +219,7 @@ Below we'll see how we can deal with a calibration dataset in R, for calibrating
 
 To begin with, make a KML of the study area extent which we will use as a guide.
 
-```{r, echo=FALSE}
+```{r, eval=FALSE}
 # get bounding box of cropped raster and export it as KML
 wagLandsatCropBbox <- sf::st_as_sfc(st_bbox(wagLandsatCrop))
 st_write(wagLandsatCropBbox, "wagLandsatCropBbox.kml", driver = "kml", delete_dsn=TRUE)
