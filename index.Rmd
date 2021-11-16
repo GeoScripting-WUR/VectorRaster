@@ -143,7 +143,6 @@ head(nlCitySf)
 
 It seems that the municipality names are in the `NAME_2` column. So we can subset the `sf data.frame` to the city of Wageningen alone. To do so we can use simple data frame manipulation/subsetting syntax.
 
-
 ```{r}
 nlCitySf <- nlCitySf[!is.na(nlCitySf$NAME_2),] # Remove rows with NA
 
@@ -165,6 +164,8 @@ wagContourUTM <- sf::st_transform(wagContour, targetCRS)
 ```
 
 Now that the two objects are in the same CRS, we can do the masking and visualize the result. Let's first crop and then mask, to see the difference.
+
+## Crop, Mask and visualise 
 
 ```{r, fig.align='center', fig.show='hold'}
 wagLandsatCrop <- crop(wagLandsat, wagContourUTM)
@@ -210,79 +211,16 @@ plot(waterUTM, col = 'lightblue', add = TRUE, border = '#3A9AF0', lwd = 1)   # u
 
 For the rest of the example, we'll use the `wagLandsatCrop` object, for we have a few doubts about the spatial accuracy of the two vector layers we used in the masking steps. You can check for yourself by converting them to KML and opening them in Google My Maps. (Let us know during the lesson, what do you think? Any solutions?)
 
-<!-- ### Build a calibration dataset in Google Maps -->
-<!-- Below we'll see how we can deal with a calibration dataset in R, for calibrating a classifier. It involves working with `sf data.frame` classes, extracting reflectance data for the corresponding calibration samples, manipulating data frames and building a model that can be used to predict land cover. But first we need to build the calibration dataset (ground truth), and for that we will use Google Maps. -->
+# Extract raster values along a transect in Wageningen
 
-<!-- To begin with, make a KML of the study area extent which we will use as a guide. -->
+- first create two points
+- draw a line (google?)
+- then use that line to extract the data
+- write lines out in different formats
+- (optionally - reproject?)
 
-<!-- ```{r, echo=FALSE} -->
-<!-- # get bounding box of cropped raster and export it as KML -->
-<!-- wagLandsatCropBbox <- sf::st_as_sfc(st_bbox(wagLandsatCrop)) -->
-<!-- st_write(wagLandsatCropBbox, "wagLandsatCropBbox.kml", driver = "kml", delete_dsn=TRUE) -->
-<!-- ``` -->
-
-<!-- Open [Google My Maps](https://www.google.com/maps/about/mymaps/), click *get started*, login on your Google account, create a new map by clicking on the *+* sign, name the map training_landcover, under *Untitled layer* click *Import* and find the KML file that you just created. You will see a rectangle of the study area appear on the map with the name *wagLandsatCropBbox*, click *Add layer*, name the new, untitled layer *landcover_points*, change the basemap to a satellite map, click *Add marker*, draw points on top of a few landcover types, and name the point as the land cover type. Keep your points within the bounding box (the *wagLandsatCropBbox* layer), otherwise they are out of the extent of the Landsat tile. Keep it to a few classes, such as `agriculture`, `forest`, `water`, `urban`. When you are done (15 - 30 points, with at least 5 points for each class), export the file to KML. -->
-
-<!-- **Note:** in the approach described above, we get to decide where the calibration samples are. Another approach would be to automatically generate randomly distributed samples. This can be done very easily in R using the `sf::st_sample()` function, which automatically returns a `sfc` (simple feature collection) object of any given size. Options for the `sf::st_sample()` include `type = regular` (for regular sampling) and `by_polygon = TRUE` for stratified sampling, to ensure that all classes (of a landcover classification) are equally represented in the sample using `multipolygon` delimiters. [See the documentation](https://www.rdocumentation.org/packages/sf/versions/0.9-6/topics/st_sample) for a more detailed explanation. -->
-
-<!-- Load the newly created KML file using the `st_read()` function. -->
-
-<!-- ```{r} -->
-<!-- samples <- sf::st_read(dsn = './data/sampleLandcover.kml') -->
-<!-- ``` -->
-
-<!-- Okay, nice, the data has been read as a simple feature. Re-project the object to the CRS of the Landsat data. -->
-
-<!-- ```{r} -->
-<!-- ## Re-project sf data.frame -->
-<!-- samplesUTM <- sf::st_transform(samples, targetCRS) -->
-<!-- ``` -->
-
-<!-- ### Calibrate the classifier -->
-<!-- ```{r} -->
-<!-- ## Extract the surface reflectance -->
-<!-- calib <- raster::extract(wagLandsatCrop, samplesUTM, df=TRUE) ## df=TRUE i.e. return as a data.frame -->
-
-<!-- ## Combine the newly created data.frame to the description column of the calibration dataset -->
-<!-- calib2 <- cbind(samplesUTM$Name, calib) -->
-
-<!-- ## Change the name of the first column, for convenience -->
-<!-- colnames(calib2)[1] <- 'lc' -->
-
-<!-- ## Make the lc column into a factor -->
-<!-- calib2$lc <-as.factor(calib2$lc) -->
-
-<!-- ## Inspect the structure of the data.frame -->
-<!-- str(calib2) -->
-<!-- ``` -->
-
-<!-- **Note:** the use of `df = TRUE` in the `extract()` call is so that we get a data frame in return. Data frame is the most common class to work with all types of models, such as linear models (`lm()`) or random forest models as we use later. -->
-
-<!-- Now we will calibrate a random forest model using the extracted data frame. -->
-<!-- Do not focus too much on the algorithm used, the important part for this tutorial is the data extraction and the following data frame manipulation. More details will come about random forest classifiers tomorrow. -->
-
-
-<!-- ```{r, message = FALSE} -->
-<!-- if(!require(randomForest)) { -->
-<!--   install.packages("randomForest") -->
-<!-- } -->
-<!-- library(randomForest) -->
-<!-- ## Calibrate model -->
-<!-- model <- randomForest(lc ~ band1 + band2 + band3 + band4 + band5 + band6 + band7, data = calib2) -->
-<!-- ## Use the model to predict land cover -->
-<!-- lcMap <- predict(wagLandsatCrop, model = model) -->
-<!-- ``` -->
-
-<!-- Let's visualize the output. The function `levelplot()` from the rasterVis package is a convenient function to plot categorical raster data. -->
-
-<!-- ```{r, fig.align='center'} -->
-<!-- library(rasterVis) -->
-<!-- levelplot(lcMap, main = "Landcover Map of Wageningen", col.regions = c('lightgreen', 'darkgreen', 'orange', 'blue')) -->
-<!-- ``` -->
-
-
-<!-- OK, we've seen better land cover maps of Wageningen, but given the amount of training data we used (22 in my case), it is not too bad. A larger calibration dataset would certainly result in a better accuracy. -->
-
+# old - and will be replaced by some material from the vector lesson
+https://geoscripting-wur.github.io/IntroToVector/ (this page will not be used in the future)
 # Extract raster values along a transect
 
 Another use of the `extract()` function can be to visualize or analyse data along transects.
@@ -391,37 +329,37 @@ plot(distanceVector/1000, alt[[1]], type = 'l',
 
 ```
 
-# Extract raster values randomly using the `sampleRandom()` function
+<!-- # Extract raster values randomly using the `sampleRandom()` function -->
 
-Below is an extra example and a simplification of the random sample demo shown [here](https://geoscripting-wur.github.io/Scripting4Geo/). We will use the `sampleRandom()` function to randomly sample altitude information from a DEM of Belgium:
+<!-- Below is an extra example and a simplification of the random sample demo shown [here](https://geoscripting-wur.github.io/Scripting4Geo/). We will use the `sampleRandom()` function to randomly sample altitude information from a DEM of Belgium: -->
 
-```{r}
-# You can choose your own country here
-bel <- getData('alt', country='BEL', mask=TRUE) ## SRTM 90m height data
-belAdmin <- getData('GADM', country='BEL', level=2) ## administrative boundaries
+<!-- ```{r} -->
+<!-- # You can choose your own country here -->
+<!-- bel <- getData('alt', country='BEL', mask=TRUE) ## SRTM 90m height data -->
+<!-- belAdmin <- getData('GADM', country='BEL', level=2) ## administrative boundaries -->
 
-## Sample the raster randomly with 40 points
-sRandomBel <- sampleRandom(bel, na.rm=TRUE, sp=TRUE, size = 40)
+<!-- ## Sample the raster randomly with 40 points -->
+<!-- sRandomBel <- sampleRandom(bel, na.rm=TRUE, sp=TRUE, size = 40) -->
 
-## Create a data.frame containing relevant info
-sRandomData <- data.frame(altitude = sRandomBel@data[[1]],
-                          latitude = sRandomBel@coords[,'y'],
-                          longitude = sRandomBel@coords[,'x'])
-```
+<!-- ## Create a data.frame containing relevant info -->
+<!-- sRandomData <- data.frame(altitude = sRandomBel@data[[1]], -->
+<!--                           latitude = sRandomBel@coords[,'y'], -->
+<!--                           longitude = sRandomBel@coords[,'x']) -->
+<!-- ``` -->
 
-```{r, fig.align='center', fig.show='hold'}
-## Plot
-plot(bel)
-plot(belAdmin, add=TRUE)
-plot(sRandomBel, add = TRUE, col = "red")
+<!-- ```{r, fig.align='center', fig.show='hold'} -->
+<!-- ## Plot -->
+<!-- plot(bel) -->
+<!-- plot(belAdmin, add=TRUE) -->
+<!-- plot(sRandomBel, add = TRUE, col = "red") -->
 
-## Plot altitude versus latitude
-plot(sRandomData$latitude,sRandomData$altitude, ylab = "Altitude (m)", xlab = "Latitude (degrees)")
-```
+<!-- ## Plot altitude versus latitude -->
+<!-- plot(sRandomData$latitude,sRandomData$altitude, ylab = "Altitude (m)", xlab = "Latitude (degrees)") -->
+<!-- ``` -->
 
-```{block, type="alert alert-success"}
-> **Question 3**: If you would like to sample height data per province randomly, what would you need to do?
-```
+<!-- ```{block, type="alert alert-success"} -->
+<!-- > **Question 3**: If you would like to sample height data per province randomly, what would you need to do? -->
+<!-- ``` -->
 
 <!--
 
@@ -500,3 +438,76 @@ Make sure your script is clear and reproducible. Make a new GitLab project and u
 
 Do not forget to add your teamname, members and date at the top of your script.
 -->
+
+<!-- ### Build a calibration dataset in Google Maps -->
+<!-- Below we'll see how we can deal with a calibration dataset in R, for calibrating a classifier. It involves working with `sf data.frame` classes, extracting reflectance data for the corresponding calibration samples, manipulating data frames and building a model that can be used to predict land cover. But first we need to build the calibration dataset (ground truth), and for that we will use Google Maps. -->
+
+<!-- To begin with, make a KML of the study area extent which we will use as a guide. -->
+
+<!-- ```{r, echo=FALSE} -->
+<!-- # get bounding box of cropped raster and export it as KML -->
+<!-- wagLandsatCropBbox <- sf::st_as_sfc(st_bbox(wagLandsatCrop)) -->
+<!-- st_write(wagLandsatCropBbox, "wagLandsatCropBbox.kml", driver = "kml", delete_dsn=TRUE) -->
+<!-- ``` -->
+
+<!-- Open [Google My Maps](https://www.google.com/maps/about/mymaps/), click *get started*, login on your Google account, create a new map by clicking on the *+* sign, name the map training_landcover, under *Untitled layer* click *Import* and find the KML file that you just created. You will see a rectangle of the study area appear on the map with the name *wagLandsatCropBbox*, click *Add layer*, name the new, untitled layer *landcover_points*, change the basemap to a satellite map, click *Add marker*, draw points on top of a few landcover types, and name the point as the land cover type. Keep your points within the bounding box (the *wagLandsatCropBbox* layer), otherwise they are out of the extent of the Landsat tile. Keep it to a few classes, such as `agriculture`, `forest`, `water`, `urban`. When you are done (15 - 30 points, with at least 5 points for each class), export the file to KML. -->
+
+<!-- **Note:** in the approach described above, we get to decide where the calibration samples are. Another approach would be to automatically generate randomly distributed samples. This can be done very easily in R using the `sf::st_sample()` function, which automatically returns a `sfc` (simple feature collection) object of any given size. Options for the `sf::st_sample()` include `type = regular` (for regular sampling) and `by_polygon = TRUE` for stratified sampling, to ensure that all classes (of a landcover classification) are equally represented in the sample using `multipolygon` delimiters. [See the documentation](https://www.rdocumentation.org/packages/sf/versions/0.9-6/topics/st_sample) for a more detailed explanation. -->
+
+<!-- Load the newly created KML file using the `st_read()` function. -->
+
+<!-- ```{r} -->
+<!-- samples <- sf::st_read(dsn = './data/sampleLandcover.kml') -->
+<!-- ``` -->
+
+<!-- Okay, nice, the data has been read as a simple feature. Re-project the object to the CRS of the Landsat data. -->
+
+<!-- ```{r} -->
+<!-- ## Re-project sf data.frame -->
+<!-- samplesUTM <- sf::st_transform(samples, targetCRS) -->
+<!-- ``` -->
+
+<!-- ### Calibrate the classifier -->
+<!-- ```{r} -->
+<!-- ## Extract the surface reflectance -->
+<!-- calib <- raster::extract(wagLandsatCrop, samplesUTM, df=TRUE) ## df=TRUE i.e. return as a data.frame -->
+
+<!-- ## Combine the newly created data.frame to the description column of the calibration dataset -->
+<!-- calib2 <- cbind(samplesUTM$Name, calib) -->
+
+<!-- ## Change the name of the first column, for convenience -->
+<!-- colnames(calib2)[1] <- 'lc' -->
+
+<!-- ## Make the lc column into a factor -->
+<!-- calib2$lc <-as.factor(calib2$lc) -->
+
+<!-- ## Inspect the structure of the data.frame -->
+<!-- str(calib2) -->
+<!-- ``` -->
+
+<!-- **Note:** the use of `df = TRUE` in the `extract()` call is so that we get a data frame in return. Data frame is the most common class to work with all types of models, such as linear models (`lm()`) or random forest models as we use later. -->
+
+<!-- Now we will calibrate a random forest model using the extracted data frame. -->
+<!-- Do not focus too much on the algorithm used, the important part for this tutorial is the data extraction and the following data frame manipulation. More details will come about random forest classifiers tomorrow. -->
+
+
+<!-- ```{r, message = FALSE} -->
+<!-- if(!require(randomForest)) { -->
+<!--   install.packages("randomForest") -->
+<!-- } -->
+<!-- library(randomForest) -->
+<!-- ## Calibrate model -->
+<!-- model <- randomForest(lc ~ band1 + band2 + band3 + band4 + band5 + band6 + band7, data = calib2) -->
+<!-- ## Use the model to predict land cover -->
+<!-- lcMap <- predict(wagLandsatCrop, model = model) -->
+<!-- ``` -->
+
+<!-- Let's visualize the output. The function `levelplot()` from the rasterVis package is a convenient function to plot categorical raster data. -->
+
+<!-- ```{r, fig.align='center'} -->
+<!-- library(rasterVis) -->
+<!-- levelplot(lcMap, main = "Landcover Map of Wageningen", col.regions = c('lightgreen', 'darkgreen', 'orange', 'blue')) -->
+<!-- ``` -->
+
+
+<!-- OK, we've seen better land cover maps of Wageningen, but given the amount of training data we used (22 in my case), it is not too bad. A larger calibration dataset would certainly result in a better accuracy. -->
