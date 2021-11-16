@@ -22,13 +22,12 @@ output:
 At the end of the lecture, you should be able to:
 
 - plot spatial vector and raster data
-- transform between datums and map projects
+- transform vector and raster data
 - write and read spatial vector formats (e.g. KML, GML, GeoJSON, shapefile);
-- apply basic operations on vector data, such as buffering, intersection and area calculation;
-- Have an overview of what can be achieved when combining raster and vector data in R
-<!-- - Transform simple feature objects of the *sf* package into spatial objects of the *sp* package -->
-- Be able to extract raster data using vector data
+- apply basic operations on vector data, such as masking, cropping
+- be able to extract raster data using vector data
 
+<!-- - Transform simple feature objects of the *sf* package into spatial objects of the *sp* package -->
 # Introduction
 
 In the previous lectures we saw how to deal with [raster](http://geoscripting-wur.github.io/IntroToRaster/) data using R so below follows an introduction on how to handle vector and raster data in R.
