@@ -1277,17 +1277,33 @@ plot(waterUTM, col = 'lightblue', add = TRUE, border = '#3A9AF0', lwd = 1)   # u
 </div>
 </div>
 </div>
-<p>For the rest of the example, we’ll use the <code>wagLandsatCrop</code> object, for we have a few doubts about the spatial accuracy of the two vector layers we used in the masking steps. You can check for yourself by converting them to KML and opening them in Google My Maps. (Let us know during the lesson, what do you think? Any solutions?)</p>
-<h1 id="extract-raster-values-along-a-transect-in-wageningen">Extract raster values along a transect in Wageningen</h1>
-<ul>
-<li>first create two points</li>
-<li>draw a line (google?)</li>
-<li>then use that line to extract the data</li>
-<li>write lines out in different formats</li>
-<li>(optionally - reproject?)</li>
-</ul>
-<h1 id="old---and-will-be-replaced-by-some-material-from-the-vector-lesson">old - and will be replaced by some material from the vector lesson</h1>
-<p>https://geoscripting-wur.github.io/IntroToVector/ (this page will not be used in the future) # Extract raster values along a transect</p>
+<!-- For the rest of the example, we'll use the `wagLandsatCrop` object, for we have a few doubts about the spatial accuracy of the two vector layers we used in the masking steps. You can check for yourself by converting them to KML and opening them in Google My Maps. (Let us know during the lesson, what do you think? Any solutions?) -->
+<p>Also, some of our friends want these exact data too (e.g. the <code>water</code> polygon object). One friend of ours is a software engineer and he wants a GeoJSON. Another friend is a GIS-analyst in QGIS and as a backup he wants the file in Geographic Markup Language (GML). These fileformats (KML, GeoJSON, GML and Shapefile) are commonly used in spatial analysis. Let’s try to give them the files in those formats! You can try for yourself and e.g. start by converting them to KML and opening them in Google My Maps (https://mymaps.google.com/).</p>
+<div class="row">
+<button class="source R toggle btn btn-xs btn-primary">
+<span class="glyphicon glyphicon-chevron-down"></span> R source
+</button>
+<pre style=""><code class="source r">## Try to export the simple feature to a KML. What happens? ps. The coordinate system of KML is geographic (latitude/longitude) on the World Geodetic System of 1984 (WGS84) datum. 
+try(st_write(water, dsn = "./data/water.kml"))</code></pre>
+<button class="output R toggle btn btn-xs btn-success">
+<span class="glyphicon glyphicon-chevron-down"></span> R output
+</button>
+<pre style=""><code class="output r">## Layer water in dataset ./data/water.kml already exists:
+## use either append=TRUE to append to layer or append=FALSE to overwrite layer
+## Error in CPL_write_ogr(obj, dsn, layer, driver, as.character(dataset_options),  : 
+##   Dataset already exists.
+</code></pre>
+</div>
+<!-- ## This section is an idea for 2022 -->
+<!-- # Extract raster values along a transect in Wageningen -->
+<!-- - first create two points -->
+<!-- - draw a line (google?) -->
+<!-- - then use that line to extract the data -->
+<!-- - write lines out in different formats -->
+<!-- - (optionally - reproject?) -->
+<!-- # old - and will be replaced by some material from the vector lesson -->
+<!-- https://geoscripting-wur.github.io/IntroToVector/ (this page will not be used in the future) -->
+<h1 id="extract-raster-values-along-a-transect">Extract raster values along a transect</h1>
 <p>Another use of the <code>extract()</code> function can be to visualize or analyse data along transects. In the following example, we will run a transect across Belgium and visualize the change in elevation.</p>
 <p>Let’s first download the elevation data of Belgium, using the <code>getData()</code> function of the raster package.</p>
 <div class="row">

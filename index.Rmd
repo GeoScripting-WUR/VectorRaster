@@ -208,18 +208,30 @@ plotRGB(wagLandsatSubW, 5, 4, 3)
 plot(waterUTM, col = 'lightblue', add = TRUE, border = '#3A9AF0', lwd = 1)   # use a site such as https://htmlcolorcodes.com/ to find the hexidecimal code for colours
 ```
 
-For the rest of the example, we'll use the `wagLandsatCrop` object, for we have a few doubts about the spatial accuracy of the two vector layers we used in the masking steps. You can check for yourself by converting them to KML and opening them in Google My Maps. (Let us know during the lesson, what do you think? Any solutions?)
+<!-- For the rest of the example, we'll use the `wagLandsatCrop` object, for we have a few doubts about the spatial accuracy of the two vector layers we used in the masking steps. You can check for yourself by converting them to KML and opening them in Google My Maps. (Let us know during the lesson, what do you think? Any solutions?) -->
 
-# Extract raster values along a transect in Wageningen
+Also, some of our friends want these exact data too (e.g. the `water` polygon object). One friend of ours is a software engineer and he wants a GeoJSON. Another friend is a GIS-analyst in QGIS and as a backup he wants the file in Geographic Markup Language (GML). These fileformats (KML, GeoJSON, GML and Shapefile) are commonly used in spatial analysis. Let’s try to give them the files in those formats! 
+You can try for yourself and e.g. start by converting them to KML and opening them in Google My Maps (https://mymaps.google.com/).
 
-- first create two points
-- draw a line (google?)
-- then use that line to extract the data
-- write lines out in different formats
-- (optionally - reproject?)
+```{r}
+## Try to export the simple feature to a KML. What happens? ps. The coordinate system of KML is geographic (latitude/longitude) on the World Geodetic System of 1984 (WGS84) datum. 
+try(st_write(water, dsn = "./data/water.kml"))
 
-# old - and will be replaced by some material from the vector lesson
-https://geoscripting-wur.github.io/IntroToVector/ (this page will not be used in the future)
+```
+
+<!-- ## This section is an idea for 2022 -->
+
+<!-- # Extract raster values along a transect in Wageningen -->
+
+<!-- - first create two points -->
+<!-- - draw a line (google?) -->
+<!-- - then use that line to extract the data -->
+<!-- - write lines out in different formats -->
+<!-- - (optionally - reproject?) -->
+
+<!-- # old - and will be replaced by some material from the vector lesson -->
+<!-- https://geoscripting-wur.github.io/IntroToVector/ (this page will not be used in the future) -->
+
 # Extract raster values along a transect
 
 Another use of the `extract()` function can be to visualize or analyse data along transects.
@@ -245,7 +257,6 @@ plot(bel)
 Everything seems correct.
 
 We want to look at a transect, which we can draw by hand by selecting two points by clicking. The `drawLine()` function will help us do that. Once you run the function, you will be able to click in the plotting window of R (The `bel` object should already be present in the plot panel before running `drawLine()`). Click *Finish* or right-click on the plot once you have selected the two extremities of the line.
-
 
 ```{r, eval=FALSE}
 line <- drawLine()
