@@ -1285,14 +1285,6 @@ plot(waterUTM, col = 'lightblue', add = TRUE, border = '#3A9AF0', lwd = 1)   # u
 </button>
 <pre style=""><code class="source r">## Try to export the simple feature to a KML. What happens? ps. The coordinate system of KML is geographic (latitude/longitude) on the World Geodetic System of 1984 (WGS84) datum. 
 try(st_write(water, dsn = "./data/water.kml"))</code></pre>
-<button class="output R toggle btn btn-xs btn-success">
-<span class="glyphicon glyphicon-chevron-down"></span> R output
-</button>
-<pre style=""><code class="output r">## Layer water in dataset ./data/water.kml already exists:
-## use either append=TRUE to append to layer or append=FALSE to overwrite layer
-## Error in CPL_write_ogr(obj, dsn, layer, driver, as.character(dataset_options),  : 
-##   Dataset already exists.
-</code></pre>
 </div>
 <!-- ## This section is an idea for 2022 -->
 <!-- # Extract raster values along a transect in Wageningen -->
