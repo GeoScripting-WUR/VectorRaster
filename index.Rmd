@@ -101,9 +101,10 @@ Step by step we will:
 ```{r, eval=FALSE}
 if(!"raster" %in% rownames(installed.packages())){install.packages("raster")}
 if(!"sf" %in% rownames(installed.packages())){install.packages("sf")}
-
+if (!dir.exists("data")) dir.create("data")
 library(raster)
 library(sf)
+library(rgeos)
 ## Download, unzip and load the data
 download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/landsat8.zip', destfile = 'data/landsat8.zip', method = 'auto')
 
@@ -183,6 +184,12 @@ In the figure above, the left panel displays the output of `crop`, while the sec
 
 We also have a water mask of Wageningen in vector format. Let's download it and also reproject it to the CRS of the Landsat data.
 
+
+```{block type="alert alert-info"}
+Important functions are `sf::st_read` and `sf::st_write`. These are very powerful function that enable reading and writing simple features or layers from a file or data base.
+```
+
+
 ```{r, eval=FALSE}
 download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/wageningenWater.zip', destfile = 'data/wageningenWater.zip', method = 'auto')
 unzip('data/wageningenWater.zip', exdir = "data")
@@ -210,12 +217,22 @@ plot(waterUTM, col = 'lightblue', add = TRUE, border = '#3A9AF0', lwd = 1)   # u
 
 <!-- For the rest of the example, we'll use the `wagLandsatCrop` object, for we have a few doubts about the spatial accuracy of the two vector layers we used in the masking steps. You can check for yourself by converting them to KML and opening them in Google My Maps. (Let us know during the lesson, what do you think? Any solutions?) -->
 
-Also, some of our friends want these exact data too (e.g. the `water` polygon object). One friend of ours is a software engineer and he wants a GeoJSON. Another friend is a GIS-analyst in QGIS and as a backup he wants the file in Geographic Markup Language (GML). These fileformats (KML, GeoJSON, GML and Shapefile) are commonly used in spatial analysis. Let’s try to give them the files in those formats! 
+
+```{block type="alert alert-info"}
+Also, some of our friends want these exact data too (e.g. the `water` polygon object). 
+
+One friend of ours is a software engineer and he wants a GeoJSON. Another friend is a GIS-analyst in QGIS and as a backup he wants the file in Geographic Markup Language (GML). These fileformats (KML, GeoJSON, GML and Shapefile) are commonly used in spatial analysis. Let’s try to give them the files in those formats! 
 You can try for yourself and e.g. start by converting them to KML and opening them in Google My Maps (https://mymaps.google.com/).
+```
 
 ```{r, eval=FALSE}
 ## Try to export the simple feature to a KML. What happens? ps. The coordinate system of KML is geographic (latitude/longitude) on the World Geodetic System of 1984 (WGS84) datum. 
 try(st_write(water, dsn = "./data/water.kml"))
+```
+
+```{block type="alert alert-info"}
+You can now open the created `water.kml` file in [Google My Maps](https://mymaps.google.com/).
+You can also try out other formats like e.g. `GeoJSON`.
 
 ```
 
@@ -256,7 +273,9 @@ plot(bel)
 
 Everything seems correct.
 
+
 We want to look at a transect, which we can draw by hand by selecting two points by clicking. The `drawLine()` function will help us do that. Once you run the function, you will be able to click in the plotting window of R (The `bel` object should already be present in the plot panel before running `drawLine()`). Click *Finish* or right-click on the plot once you have selected the two extremities of the line.
+
 
 ```{r, eval=FALSE}
 line <- drawLine()
