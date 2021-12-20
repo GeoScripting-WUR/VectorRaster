@@ -50,16 +50,32 @@ The possiblities are huge. In this course we can only scratch the surface with s
 
 <!-- ## Working with *sf* -->
 
-### Conversions
+### Raster and vector integration and conversion
 
-You will find some utilities in R to convert data from raster to vector format and vice-versa. However, whenever you start converting objects, you should wonder whether you are taking the right approach to solve your problem. An approach that does not involve converting your data from vector to raster or the opposite should almost always be preferred.
+Historically, the first package handling vectors in R was the *sp* package, and the first package handling rasters was the *raster* package. They had cross-integration so that you could perform operations such as cropping a raster by a vector or extracting raster information over a vector location. However, the *sp* package got deprecated and *sf* was made as its successor, with much easier handling of the data (as a regular *data.frame*). Many of the packages that previously handled *sp* objects, including *raster*, got updated to also handle *sf* objects. Next, the *stars* package was developed by the creators of the *sf* package as a means of having multidimensional rasters. However, the older *raster* package was still the go-to solution for raster handling in R. Finally, in 2020, the *raster* package was deprecated and replaced with the *terra* package, which is a much faster C++ version of *raster*, but it also includes its own definition of vector data.
+
+The result is that some packages provide or work with *sp*, *sf* and *terra* vectors, and some provide or work with *raster*, *stars* and *terra* rasters. This can be quite confusing. Therefore, in the course we currently use only the *sf* package for handling vectors and the *terra* package for handling rasters. The workflow is then to convert any object that is not *sf* or *terra* into *sf* or *terra*, do processing in *sf* and/or *terra*, and optionally convert the objects back if integration with some other package is necessary (e.g. `sf` to `SpatVector` for use in *terra*). Below is a matrix showing how to convert the various objects.
+
+| From/To                                              | *sf*         | *terra*    | *raster*   |
+|--------                                              |------------- |----------  |----------  |
+| *sp* `SpatialPoints`/`SpatialLines`/`SpatialPolygons`| `st_as_sf()` | `vect()`   | None       |
+| *sf* `sf data.frame`                                 | None         | `vect()`   | None       |
+| *terra* `SpatVector`                                 | `st_as_sf()` | None       | None       |
+| *raster* `RasterLayer`/`RasterStack`/`RasterBrick`   | None         | `rast()`   | None       |
+| *stars* `stars`                                      | None         | `rast()`   | None       |
+| *terra* `SpatRaster`                                 | None         | None       | `brick()`  |
+| *raster* `extent`                                    | `st_bbox()`  | `ext()`    | None       |
+| *sf* `bbox`                                          | None         | None so far| `extent()` |
+| *terra* `SpatExtent`                                 | None so far  | None       | None so far|
+
+The matrix above shows lossless conversions, also known as *casting* or *coercing* data types. You can also convert data from raster to vector format and vice-versa. However, whenever you start converting between rasters and vectors, you should wonder whether you are taking the right approach to solve your problem. An approach that does not involve converting your data from vector to raster or the opposite should almost always be preferred.
 
 As a result, because these functions are only useful for some very particular situations, I only give a brief description of them below.
 
 - Vector to raster: 
   - There is one function that allows to convert a vector object to a raster object. It is the `rasterize()` function.
 - Raster to vector: 
-  - Three functions allow to convert raster data to vector; the `rasterToPoints()`, `rasterToContour()`, and `rasterToPolygons()` functions. The latter can be useful to convert the result of a classification. In that case, set `dissolve =` to `TRUE` so that the polygons with the same attribute value will be dissolved into multi-polygon regions. This option requires the *rgeos* package. **Note**: These methods are known to perform poorly under R. Using the `terra::as.polygons()` etc. functions from the *terra* package, which is a sucessor of the *raster* package, is much faster due to *terra* being written in C++ instead. Calling `gdal_translate` directly or through the *gdalUtils* package can also be much faster for the same reason.
+  - Three functions allow to convert raster data to vector: the deprecated `raster::rasterToPoints()`, `raster::rasterToContour()`, and `raster::rasterToPolygons()` functions will produce *sp* objects and are very slow. The equivalent `terra::as.points()`, `terra::as.contour()` and `terra::as.polygons()` produce `SpatVector` (*terra*) objects and are much faster due to *terra* being written in C++ instead. The conversion to polygons can be useful to convert the result of a classification. In that case, set `dissolve =` to `TRUE` so that the polygons with the same attribute value will be dissolved into multi-polygon regions. This option requires the *rgeos* package.
 
 ### Geometric operations
 
@@ -67,16 +83,16 @@ Raw raster data do not usually conform to any notion of administrative or geogra
 
 - Crop:
     - Cropping consists in reducing the extent of a spatial object to a smaller extent. As a result, the output of `crop()` will automatically be rectangular and will not consider any features such as polygons to perform the subsetting. It is often useful to crop data as tightly as possible to the area under investigation to reduce the amount of data and have a more focused view when visualizing the data. 
-    - Crop uses objects of class `extent` to define the new extent, or any object that can be coerced to an extent (see `?extent` for more info on this). This means that practically all spatial objects (raster or vector) can be used directly in crop. Considering two raster objects `r1` and `r2` with `r2` smaller than `r1`, you can simply use `crop(r1, r2)` in order to crop `r1` to the extent of `r2`.
-    - You can easily define an extent interactively (by clicking) thanks to the `drawExtent()` function.
+    - Crop uses objects of class `raster::extent` or `terra::SpatExtent` to define the new extent, or any object that can be coerced to an extent (see `?raster::extent` or `?terra::ext` for more info on this). This means that practically all spatial objects (raster or vector) can be used directly in crop. Considering two rasters `r1` and `r2` with `r2` smaller than `r1`, you can simply use `crop(r1, r2)` in order to crop `r1` to the extent of `r2`.
+    - You can easily define an extent interactively (by clicking) thanks to the `raster::drawExtent()` or `terra::draw()` function.
 
 - Mask:
-  - `mask()` can be used with almost all spatial objects to mask (= set to `NA`) values of a raster object. When used with a `SpatialPolygon` object, `mask` will keep values of the raster overlayed by polygons and mask the values outside of polygons.
-  -  Note the very useful `inverse=` argument of `mask()`, which allows to mask the inverse of the area covered by the features. We will use this feature of mask later in the tutorial to exclude water areas of a raster, defined in an independent `SpatialPolygons` object.
+  - `mask()` can be used with almost all spatial objects to mask (= set to `NA`) values of a raster object. When used with a polygon object, `mask()` will keep values of the raster overlayed by polygons and mask the values outside of polygons.
+  -  Note the very useful `inverse=` argument of `mask()`, which allows to mask the inverse of the area covered by the features. We will use this feature of mask later in the tutorial to exclude water areas of a raster, defined in an independent polygon object.
 
 - Extract:
-  - The most common operation when combining vector and raster data is the extraction. It simply consists in extracting the values of a raster object for locations specified by a vector object. The object can be one of the classes of the *sp* package, or an `extent` object.
-  - When using `extract()` with `SpatialPolygons` or `SpatialLines`, individual features of the vector layer may overlay or intersect several pixels. In that case a function (`fun =`) can be used to summarize the values into one. Note that although most often the function `min`, `max`, `mean` and `median` are used for the spatial aggregation, also any custom-made function can be used. `extract()` provides many options for the return object, such as a data frame or a new *sp* object with extracted values appended to the attribute table. See `?extract()` example section.
+  - The most common operation when combining vector and raster data is the extraction, using the function`extract()`. It simply consists in extracting the values of a raster object for locations specified by a vector object.
+  - When using `extract()` with polygons or lines, individual features of the vector layer may overlay or intersect several pixels. In that case a function (`fun =`) can be used to summarize the values into one. Note that although most often the functions `min`, `max`, `mean` or `median` are used for the spatial aggregation, also any custom-made function can be used. The result is a matrix of raster values at the given locations. See `?extract()` example section.
 
 
 # Visualise spatial vector layer together with a Landsat 8 images from Wageningen 
