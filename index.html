@@ -1004,7 +1004,11 @@
 <div class="container">
 <div class="row row-offcanvas row-offcanvas-right">
 <div class="contents col-xs-12 col-md-10">
-<style type="text/css">body {max-width: none;}</style>
+<style type="text/css">body {max-width: none;}
+a:visited {
+      color: #91170a;
+    }
+</style>
 <h1 id="wur-geoscripting"><a href="https://geoscripting-wur.github.io/">WUR Geoscripting</a> <img src="https://www.wur.nl/upload/854757ab-168f-46d7-b415-f8b501eebaa5_WUR_RGB_standard_2021-site.svg" alt="WUR logo" style="height: 35px;"/></h1>
 <h1 id="week-2-raster---vector-integration-in-r">Week 2, Raster - Vector integration in R</h1>
 <h1 id="todays-learning-objectives">Today’s learning objectives</h1>
@@ -1123,9 +1127,15 @@
 <li><code>mask()</code> can be used with almost all spatial objects to mask (= set to <code>NA</code>) values of a raster object. When used with a polygon object, <code>mask()</code> will keep values of the raster overlayed by polygons and mask the values outside of polygons.</li>
 <li>Note the very useful <code>inverse=</code> argument of <code>mask()</code>, which allows to mask the inverse of the area covered by the features. We will use this feature of mask later in the tutorial to exclude water areas of a raster, defined in an independent polygon object.</li>
 </ul></li>
+<li>Buffer:
+<ul>
+<li><code>buffer()</code> Calculate a buffer around all cells that are not NA in a SpatRaster, or around the geometries of a SpatVector (currently only implemented for points).</li>
+<li>Note that the distance unit of the buffer width parameter is meters if the CRS is (+proj=longlat), and in map units (typically also meters) if not.</li>
+<li>see <code>?terra::buffer</code> for more info.</li>
+</ul></li>
 <li>Extract:
 <ul>
-<li>The most common operation when combining vector and raster data is the extraction, using the function<code>extract()</code>. It simply consists in extracting the values of a raster object for locations specified by a vector object.</li>
+<li>The most common operation when combining vector and raster data is the extraction, using the function<code>extract()</code>. It simply consists in extracting the values of a raster object for locations specified by a vector object (e.g. points).</li>
 <li>When using <code>extract()</code> with polygons or lines, individual features of the vector layer may overlay or intersect several pixels. In that case a function (<code>fun =</code>) can be used to summarize the values into one. Note that although most often the functions <code>min</code>, <code>max</code>, <code>mean</code> or <code>median</code> are used for the spatial aggregation, also any custom-made function can be used. The result is a matrix of raster values at the given locations. See <code>?extract()</code> example section.</li>
 </ul></li>
 </ul>
