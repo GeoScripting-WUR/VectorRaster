@@ -127,10 +127,13 @@ Step by step we will:
 ```{r, eval=FALSE}
 if(!"raster" %in% rownames(installed.packages())){install.packages("raster")}
 if(!"sf" %in% rownames(installed.packages())){install.packages("sf")}
+if(!"rgeos" %in% rownames(installed.packages())){install.packages("rgeos")}
 if (!dir.exists("data")) dir.create("data")
+
 library(raster)
 library(sf)
 library(rgeos)
+
 ## Download, unzip and load the data
 download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/landsat8.zip', destfile = 'data/landsat8.zip', method = 'auto')
 
