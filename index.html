@@ -1156,10 +1156,13 @@ a:visited {
 </button>
 <pre style=""><code class="source r">if(!"raster" %in% rownames(installed.packages())){install.packages("raster")}
 if(!"sf" %in% rownames(installed.packages())){install.packages("sf")}
+if(!"rgeos" %in% rownames(installed.packages())){install.packages("rgeos")}
 if (!dir.exists("data")) dir.create("data")
+
 library(raster)
 library(sf)
 library(rgeos)
+
 ## Download, unzip and load the data
 download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/landsat8.zip', destfile = 'data/landsat8.zip', method = 'auto')
 
@@ -1363,7 +1366,7 @@ plot(waterUTM, col = 'lightblue', add = TRUE, border = '#3A9AF0', lwd = 1)   # u
 </div>
 </div>
 </div>
-<!-- For the rest of the example, we'll use the `wagLandsatCrop` object, for we have a few doubts about the spatial accuracy of the two vector layers we used in the masking steps. You can check for yourself by converting them to KML and opening them in Google My Maps. (Let us know during the lesson, what do you think? Any solutions?) -->
+<!-- Open [Google My Maps](https://www.google.com/maps/about/mymaps/), click *get started*, login on your Google account, create a new map by clicking on the *+* sign, name the map training_landcover, under *Untitled layer* click *Import* and find the KML file that you just created. You will see a rectangle of the study area appear on the map with the name *wagLandsatCropBbox*, click *Add layer*, name the new, untitled layer *landcover_points*, change the basemap to a satellite map, click *Add marker*, draw points on top of a few landcover types, and name the point as the land cover type. Keep your points within the bounding box (the *wagLandsatCropBbox* layer), otherwise they are out of the extent of the Landsat tile. Keep it to a few classes, such as `agriculture`, `forest`, `water`, `urban`. When you are done (15 - 30 points, with at least 5 points for each class), export the file to KML. -->
 <div class="row">
 <div class="alert alert-info">
 <p>
@@ -1379,7 +1382,9 @@ One friend of ours is a software engineer and he wants a GeoJSON. Another friend
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
 <pre style=""><code class="source r">## Try to export the simple feature to a KML. What happens? ps. The coordinate system of KML is geographic (latitude/longitude) on the World Geodetic System of 1984 (WGS84) datum. 
-try(st_write(water, dsn = "./data/water.kml"))</code></pre>
+outKML <- c("./data/water.kml")
+try(st_write(water, outKML, driver = "kml", delete_dsn = ifelse(file.exists(outKML),TRUE,FALSE))
+## checks for existence of KML file and sets the delete_dsn option to true or false accordingly</code></pre>
 </div>
 <div class="row">
 <div class="alert alert-info">
