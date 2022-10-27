@@ -69,7 +69,7 @@ The result is that some packages provide or work with *sp*, *sf* and *terra* vec
 | *stars* `stars`                                      | None         | `rast()`   | None       |
 | *terra* `SpatRaster`                                 | None         | None       | `brick()`  |
 | *raster* `extent`                                    | `st_bbox()`  | `ext()`    | None       |
-| *sf* `bbox`                                          | None         | [None so far](https://github.com/rspatial/terra/issues/858)| `extent()` |
+| *sf* `bbox`                                          | None         | `ext()`    | `extent()` |
 | *terra* `SpatExtent`                                 | `st_bbox()`  | None       | None so far|
 
 The matrix above shows lossless conversions, also known as *casting* or *coercing* data types. You can also convert data from raster to vector format and vice-versa. However, whenever you start converting between rasters and vectors, you should wonder whether you are taking the right approach to solve your problem. An approach that does not involve converting your data from vector to raster or the opposite should almost always be preferred.
