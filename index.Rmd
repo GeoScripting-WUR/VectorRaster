@@ -21,20 +21,17 @@ a:visited {color: #91170a;}
 # Week 2, Lesson 5: Vector - Raster
 
 ## Learning objectives
+* Plot spatial vector and raster data
+* Transform vector and raster data
+* Write and read spatial vector formats (e.g. KML, GML, GeoJSON, shapefile);
+* Apply basic operations on vector data, such as masking, cropping
+* Be able to extract raster data using vector data
 
-At the end of the lesson, you should be able to:
+## Introduction
 
-- plot spatial vector and raster data
-- transform vector and raster data
-- write and read spatial vector formats (e.g. KML, GML, GeoJSON, shapefile);
-- apply basic operations on vector data, such as masking, cropping
-- be able to extract raster data using vector data
+In the previous lessons we saw how to deal with [raster](http://geoscripting-wur.github.io/IntroToRaster/) data using R. This lesson is an introduction on how to handle vector data in R, as well as how to handle the combination of vector and raster data.
 
-# Introduction
-
-In the previous lessons we saw how to deal with [raster](http://geoscripting-wur.github.io/IntroToRaster/) data using R. This lesson is an introduction on how to handle vector data in R, as well as how to handle the combination of vector and raster data in R.
-
-## Some packages for working with vector and raster data in R
+### Some packages for working with vector and raster data in R
 
 In this tutorial we will use the *sf* package. This package focuses solely on vector data. It provides a standardized encoding of vector data and uses GDAL to read and write data, GEOS for geometrical operations and PROJ for projection conversions and datum transformations.
 
@@ -42,7 +39,7 @@ The GDAL library is well-documented (http://gdal.org/), but with a catch for R a
 
 Similarly, *rgeos* is an interface to the powerful Geometry Engine Open Source (GEOS) library for all kinds of operations on geometries (buffering, overlaying, area calculations, etc.).
 
-Thus, functionality that you commonly find in expensive GIS software is also available within R, using free but very powerful software libraries. Here is [handy 'cheatsheet'](https://github.com/rstudio/cheatsheets/blob/master/sf.pdf) for spatial operations with *sf*. The functions of the *sf* package are prefixed by `st_`, short for 'spatial type'.  
+Thus, functionality that you commonly find in expensive GIS software is also available within R, using free but very powerful software libraries. Here is [handy 'cheatsheet'](https://github.com/rstudio/cheatsheets/blob/master/sf.pdf) for spatial operations with *sf*. The functions of the *sf* package are prefixed by `st_`, short for 'spatial type'.
 
 The possibilities are huge. In this course we can only scratch the surface with some essentials, which hopefully invite you to experiment further and use them in your research. Details can be found in the book *Applied Spatial Data Analysis with R* and several vignettes authored by Roger Bivand, Edzer Pebesma and Virgilio Gomez-Rubio.
 
@@ -84,7 +81,7 @@ Raw raster data do not usually conform to any notion of administrative or geogra
 
 - Mask:
   - `mask()` can be used with almost all spatial objects to mask (= set to `NA`) values of a raster object. When used with a polygon object, `mask()` will keep values of the raster overlayed by polygons and mask the values outside of polygons.
-  -  Note the very useful `inverse=` argument of `mask()`, which allows to mask the inverse of the area covered by the features. We will use this feature of mask later in the tutorial to exclude water areas of a raster, defined in an independent polygon object.
+  - Note the very useful `inverse =` argument of `mask()`, which allows to mask the inverse of the area covered by the features. We will use this feature of mask later in the tutorial to exclude water areas of a raster, defined in an independent polygon object.
 
 - Buffer:
   - `buffer()` Calculate a buffer around all cells that are not NA in a SpatRaster, or around the geometries of a SpatVector (currently only implemented for points).
@@ -94,7 +91,6 @@ Raw raster data do not usually conform to any notion of administrative or geogra
 - Extract:
   - The most common operation when combining vector and raster data is the extraction, using the function`extract()`. It simply consists in extracting the values of a raster object for locations specified by a vector object (e.g. points).
   - When using `extract()` with polygons or lines, individual features of the vector layer may overlay or intersect several pixels. In that case a function (`fun =`) can be used to summarize the values into one. Note that although most often the functions `min`, `max`, `mean` or `median` are used for the spatial aggregation, also any custom-made function can be used. The result is a matrix of raster values at the given locations. See `?extract()` example section.
-
 
 # Visualise spatial vector layer together with a Landsat 8 images from Wageningen 
 
@@ -111,21 +107,24 @@ Step by step we will:
 ## Prepare the data
 
 ```{r, eval=FALSE}
+# Install necessary packages and load them
 if(!"terra" %in% rownames(installed.packages())){install.packages("terra")}
 if(!"sf" %in% rownames(installed.packages())){install.packages("sf")}
 if(!"rgeos" %in% rownames(installed.packages())){install.packages("rgeos")}
-if (!dir.exists("data")) dir.create("data")
 
 library(terra)
 library(sf)
 library(rgeos)
 
-## Download, unzip and load the data
-download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/landsat8.zip', destfile = 'data/landsat8.zip', method = 'auto')
+# Create data directory if it does not yet exist
+if (!dir.exists("data")){
+  dir.create("data")}
 
+# Download, unzip and load the data
+download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/landsat8.zip', destfile = 'data/landsat8.zip', method = 'auto')
 unzip('data/landsat8.zip', exdir = "data")
 
-## Identify the right file
+# Identify the right file
 landsatPath <- list.files(path = "data/", pattern = glob2rx('LC8*.grd'), full.names = TRUE)
 wagLandsat <- rast(landsatPath)
 ```
@@ -140,22 +139,22 @@ wagLandsat <- rast(brick('data/LC81970242014109LGN00.grd'))
 We can start by visualizing the data. Since it is a multispectral image, we can use `plotRGB()` to do so.
 
 ```{r, fig.align='center'}
-# plotRGB does not support negative values, so they need to be removed
+# plotRGB does not support negative values, so we remove them
 wagLandsat[wagLandsat < 0] <- NA
 
 # Band names can be changed here
-names(wagLandsat) <- c("band1","band2","band3","band4","band5","band6","band7") 
+names(wagLandsat) <- c("band1", "band2", "band3", "band4", "band5", "band6", "band7") 
 
 # Select which bands to assign to the red, green, and blue colour channels
 plotRGB(wagLandsat, 5, 4, 3) 
 ```
 
 ```{r}
-## Download and unzip the Dutch municipalities boundaries
+# Download and unzip the Dutch municipalities boundaries
 download.file(url = 'https://github.com/GeoScripting-WUR/Scripting4GeoIntro/releases/download/data/data.zip', destfile = 'data/GADM.zip', method = 'auto')
 unzip('data/GADM.zip', exdir = "data")
 
-# Load
+# Load level 2 dataset
 nlCitySf <- st_read("data/gadm41_NLD_2.json")
 
 # Investigate the structure of the object
@@ -188,18 +187,19 @@ wagContourUTM <- st_transform(wagContour, targetCRS)
 
 Now that the two objects are in the same CRS, we can do the masking and visualize the result. Let's first crop and then mask, to see the difference.
 
-## Crop, Mask and visualise 
+## Crop, mask and visualise 
 
 ```{r, fig.align='center', fig.show='hold'}
 wagLandsatCrop <- crop(wagLandsat, wagContourUTM)
 wagLandsatSub <- mask(wagLandsat, wagContourUTM)
 
-## Set graphical parameters (one row and two columns)
-opar <- par(mfrow=c(1,2))
+# Set graphical parameters (one row and two columns)
+opar <- par(mfrow = c(1, 2))
 plotRGB(wagLandsatCrop, 5, 4, 3)
 plotRGB(wagLandsatSub, 5, 4, 3)
-plot(st_geometry(wagContourUTM), add=TRUE, border='green', col='transparent', lwd = 3) # set fill colour to transparent
-## Reset graphical parameters
+plot(st_geometry(wagContourUTM), add = TRUE, border = 'green', col = 'transparent', lwd = 3) # set fill colour to transparent
+
+# Reset graphical parameters
 par(opar)
 ```
 
@@ -212,14 +212,15 @@ Important functions are `st_read` and `st_write`. These are very powerful functi
 ```
 
 ```{r, eval=FALSE}
+# Download and unzip files
 download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/wageningenWater.zip', destfile = 'data/wageningenWater.zip', method = 'auto')
 unzip('data/wageningenWater.zip', exdir = "data")
 
-## Load the Water Shapefile directly as an sf object
+# Load the Water Shapefile directly as an sf object
 water <- st_read('data/Water.shp')
-names(water) ## check attribute columns
+names(water) # check attribute columns
 
-## Transform the water object to match the projection of our other data
+# Transform the water object to match the projection of our other data
 waterUTM <- st_transform(water, targetCRS)
 ```
 
@@ -231,9 +232,12 @@ waterUTM <- st_transform(water, targetCRS)
 Note the use of `inverse = TRUE` in the code below, to *mask* the pixels that intersect with the features of the vector object.
 
 ```{r, fig.align='center'}
+# Mask the Landsat data
 wagLandsatSubW <- mask(wagLandsatSub, mask = waterUTM, inverse = TRUE)
+
+# Plot
 plotRGB(wagLandsatSubW, 5, 4, 3)
-plot(st_geometry(waterUTM), col = 'lightblue', add = TRUE, border = '#3A9AF0', lwd = 1)   # use a site such as https://htmlcolorcodes.com/ to find the hexidecimal code for colours
+plot(st_geometry(waterUTM), col = 'lightblue', add = TRUE, border = '#3A9AF0', lwd = 1) # use a site such as https://htmlcolorcodes.com/ to find the hexidecimal code for colours
 ```
 
 ```{block type="alert alert-info"}
@@ -247,13 +251,13 @@ You can try for yourself and e.g. start by converting them to KML and opening th
 ```{r, eval=FALSE}
 # Try to export the simple feature to a KML. What happens? ps. The coordinate system of KML is geographic (latitude/longitude) on the World Geodetic System of 1984 (WGS84) datum. 
 outKML <- "data/water.kml"
-try(st_write(water, "data/water.kml", driver = "kml", delete_dsn = ifelse(file.exists(outKML),TRUE,FALSE)))
+try(st_write(water, "data/water.kml", driver = "kml", delete_dsn = ifelse(file.exists(outKML), TRUE, FALSE)))
 
 # Note that the code above checks for existence of the KML file and sets the delete_dsn option to true or false accordingly
 ```
 
 ```{block type="alert alert-info"}
-You can now open the created `water.kml` file in [Google My Maps](https://mymaps.google.com/).
+You can now open the created `water.kml` file in [Google My Maps](https://mymaps.google.com/) or *Google Earth Pro*.
 You can also try out other formats like e.g. `GeoJSON`.
 ```
 
@@ -338,7 +342,7 @@ dist_sf <- st_length(line2)
 
 ## Use geosphere to calculate the Great Circle distance between the two ends of the line
 start <- sf::st_coordinates(line2)[1,1:2] ## get the coordinate pairs for the start and end of the line
-end <-   sf::st_coordinates(line2)[2,1:2]
+end <- sf::st_coordinates(line2)[2,1:2]
 
 dist_geosphere <- distHaversine(start,end)
 
