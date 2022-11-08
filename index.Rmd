@@ -1,9 +1,10 @@
 ---
+pagetitle: "Tutorial 5: Vector - Raster"
 author: "Loïc Dutrieux, Jan Verbesselt, Dainius Masiliunas and David Swinkels"
 date: "`r format(Sys.time(), '%d %B, %Y')`"
-pagetitle: "Lesson 5: Vector - Raster"
 output:
   knitrBootstrap::bootstrap_document:
+    title: "Tutorial 5: Vector - Raster"
     theme: "simplex"
     highlight: Tomorrow Night Bright
     menu: FALSE
@@ -18,7 +19,7 @@ a:visited {color: #91170a;}
 
 # [WUR Geoscripting](https://geoscripting-wur.github.io/) <img src="https://www.wur.nl/upload/854757ab-168f-46d7-b415-f8b501eebaa5_WUR_RGB_standard_2021-site.svg" alt="WUR logo" style="height: 35px;"/>
 
-# Week 2, Lesson 5: Vector - Raster
+# Week 2, Tutorial 5: Vector - Raster
 
 ## Learning objectives
 * Plot spatial vector and raster data
@@ -29,7 +30,7 @@ a:visited {color: #91170a;}
 
 ## Introduction
 
-In the previous lessons we saw how to deal with [raster](http://geoscripting-wur.github.io/IntroToRaster/) data using R. This lesson is an introduction on how to handle vector data in R, as well as how to handle the combination of vector and raster data.
+In the previous tutorials we saw how to deal with [raster](http://geoscripting-wur.github.io/IntroToRaster/) data using R. This tutorial is an introduction on how to handle vector data in R, as well as how to handle the combination of vector and raster data.
 
 ### Some packages for working with vector and raster data in R
 
@@ -45,7 +46,7 @@ The possibilities are huge. In this course we can only scratch the surface with 
 
 ### Raster and vector integration and conversion
 
-Historically, the first package handling vectors in R was the *sp* package, and the first package handling rasters was the *raster* package. They had cross-integration so that you could perform operations such as cropping a raster by a vector or extracting raster information over a vector location. However, the *sp* package got deprecated and *sf* was made as its successor, with much easier handling of the data (as a regular *data.frame*). Many of the packages that previously handled *sp* objects, including *raster*, got updated to also handle *sf* objects. Next, the *stars* package was developed by the creators of the *sf* package as a means of having multidimensional rasters. However, the older *raster* package was still the go-to solution for raster handling in R. Finally, as presented in lesson 4, in 2020 the *raster* package was deprecated and replaced with the *terra* package, which is a much faster C++ version of *raster*, but it also includes its own definition of vector data.
+Historically, the first package handling vectors in R was the *sp* package, and the first package handling rasters was the *raster* package. They had cross-integration so that you could perform operations such as cropping a raster by a vector or extracting raster information over a vector location. However, the *sp* package got deprecated and *sf* was made as its successor, with much easier handling of the data (as a regular *data.frame*). Many of the packages that previously handled *sp* objects, including *raster*, got updated to also handle *sf* objects. Next, the *stars* package was developed by the creators of the *sf* package as a means of having multidimensional rasters. However, the older *raster* package was still the go-to solution for raster handling in R. Finally, as you noticed in tutorial 4, in 2020 the *raster* package was deprecated and replaced with the *terra* package, which is a much faster C++ version of *raster*, but it also includes its own definition of vector data.
 
 The result is that some packages provide or work with *sp*, *sf* and *terra* vectors, and some provide or work with *raster*, *stars* and *terra* rasters. This can be quite confusing. Therefore, in the course we currently use only the *sf* package for handling vectors and the *terra* package for handling rasters. The workflow is then to convert any object that is not *sf* or *terra* into *sf* or *terra*, do processing in *sf* and/or *terra*, and optionally convert the objects back if integration with some other package is necessary (e.g. `sf` to `SpatVector` for use in *terra* in some cases). Below is a matrix showing how to convert the various objects.
 
@@ -68,7 +69,7 @@ As a result, because these functions are only useful for some very particular si
 - Vector to raster: 
   - There is one function that allows to convert a vector object to a raster object. It is the `rasterize()` function.
 - Raster to vector: 
-  - Three functions allow to convert raster data to vector: the deprecated `raster::rasterToPoints()`, `raster::rasterToContour()`, and `raster::rasterToPolygons()` functions will produce *sp* objects and are very slow. The equivalent `terra::as.points()`, `terra::as.contour()` and `terra::as.polygons()` produce `SpatVector` (*terra*) objects and are much faster due to *terra* being written in C++ instead. The conversion to polygons can be useful to convert the result of a classification. In that case, set `dissolve =` to `TRUE` so that the polygons with the same attribute value will be dissolved into multi-polygon regions. This option requires the *rgeos* package.
+  - Three functions allow to convert raster data to vector: `as.points()`, `as.contour()` and `as.polygons()` produce `SpatVector` (*terra*) objects. The conversion to polygons can be useful to convert the result of a classification. In that case, set `dissolve =` to `TRUE` so that the polygons with the same attribute value will be dissolved into multi-polygon regions. This option requires the *rgeos* package.
 
 ### Geometric operations
 
@@ -76,8 +77,8 @@ Raw raster data do not usually conform to any notion of administrative or geogra
 
 - Crop:
     - Cropping consists in reducing the extent of a spatial object to a smaller extent. As a result, the output of `crop()` will automatically be rectangular and will not consider any features such as polygons to perform the subsetting. It is often useful to crop data as tightly as possible to the area under investigation to reduce the amount of data and have a more focused view when visualizing the data. 
-    - Crop uses objects of class `raster::extent` or `terra::SpatExtent` to define the new extent, or any object that can be coerced to an extent (see `?raster::extent` or `?terra::ext` for more info on this). This means that practically all spatial objects (raster or vector) can be used directly in crop. Considering two rasters `r1` and `r2` with `r2` smaller than `r1`, you can simply use `crop(r1, r2)` in order to crop `r1` to the extent of `r2`.
-    - You can easily define an extent interactively (by clicking) thanks to the `raster::drawExtent()` or `terra::draw()` function.
+    - `crop()` uses objects of class `SpatExtent` to define the new extent, or any object that can be coerced to an extent (see `?ext` for more info on this). This means that practically all spatial objects (raster or vector) can be used directly in crop. Considering two rasters `r1` and `r2` with `r2` smaller than `r1`, you can simply use `crop(r1, r2)` in order to crop `r1` to the extent of `r2`.
+    - You can easily define an extent interactively (by clicking) thanks to the `draw()` function.
 
 - Mask:
   - `mask()` can be used with almost all spatial objects to mask (= set to `NA`) values of a raster object. When used with a polygon object, `mask()` will keep values of the raster overlayed by polygons and mask the values outside of polygons.
@@ -86,15 +87,15 @@ Raw raster data do not usually conform to any notion of administrative or geogra
 - Buffer:
   - `buffer()` Calculate a buffer around all cells that are not NA in a SpatRaster, or around the geometries of a SpatVector (currently only implemented for points).
   - Note that the distance unit of the buffer width parameter is meters if the CRS is (+proj=longlat), and in map units (typically also meters) if not.
-  - See `?terra::buffer` for more info.
+  - See `?buffer` for more info.
  
 - Extract:
-  - The most common operation when combining vector and raster data is the extraction, using the function`extract()`. It simply consists in extracting the values of a raster object for locations specified by a vector object (e.g. points).
+  - The most common operation when combining vector and raster data is the extraction, using the function `extract()`. It simply consists in extracting the values of a raster object for locations specified by a vector object (e.g. points).
   - When using `extract()` with polygons or lines, individual features of the vector layer may overlay or intersect several pixels. In that case a function (`fun =`) can be used to summarize the values into one. Note that although most often the functions `min`, `max`, `mean` or `median` are used for the spatial aggregation, also any custom-made function can be used. The result is a matrix of raster values at the given locations. See `?extract()` example section.
 
 # Visualise spatial vector layer together with a Landsat 8 images from Wageningen 
 
-The example uses the same data as you used in the [exercise](http://geoscripting-wur.github.io/IntroToRaster/#exercise-design-a-pre-processing-chain-to-assess-change-in-ndvi-over-time) of the raster lesson.
+The example uses the same data as you used in the [exercise](http://geoscripting-wur.github.io/IntroToRaster/#exercise-design-a-pre-processing-chain-to-assess-change-in-ndvi-over-time) of the raster tutorial.
 
 Step by step we will:
 
@@ -117,8 +118,9 @@ library(sf)
 library(rgeos)
 
 # Create data directory if it does not yet exist
-if (!dir.exists("data")){
-  dir.create("data")}
+if (!dir.exists("data")) {
+  dir.create("data")
+}
 
 # Download, unzip and load the data
 download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/landsat8.zip', destfile = 'data/landsat8.zip', method = 'auto')
@@ -271,7 +273,7 @@ You can also try out other formats like e.g. `GeoJSON`.
 <!-- - write lines out in different formats -->
 <!-- - (optionally - reproject?) -->
 
-<!-- # old - and will be replaced by some material from the vector lesson -->
+<!-- # old - and will be replaced by some material from the vector tutorial -->
 <!-- https://geoscripting-wur.github.io/IntroToVector/ (this page will not be used in the future) -->
 
 # Extract raster values along a transect
@@ -382,6 +384,7 @@ plot(distanceVector/1000, alt[[1]], type = 'l',
 
 ```
 
+
 <!-- # Extract raster values randomly using the `sampleRandom()` function -->
 
 <!-- Below is an extra example and a simplification of the random sample demo shown [here](https://geoscripting-wur.github.io/Scripting4Geo/). We will use the `sampleRandom()` function to randomly sample altitude information from a DEM of Belgium: -->
@@ -414,83 +417,6 @@ plot(distanceVector/1000, alt[[1]], type = 'l',
 <!-- > **Question 3**: If you would like to sample height data per province randomly, what would you need to do? -->
 <!-- ``` -->
 
-<!--
-
-# Exercise 7: The greenest municipality
-
-## Background
-Last week end, on a rainy Saturday afternoon in Wageningen, my friend and I decided to go for a coffee. We had met at the market, while shopping for fresh vegetables, when we thought of moving to a warmer and drier place to catch up a bit since last time we had met a month ago. We were both sitting in the cafe; me by the window and he, sitting on the opposite side of the table, facing the rest of the busy room. The chattering of the crown behind me, mixed with the clinking of glasses and the hissing sound of the espresso machine releasing its vapour was giving the feeling of an old movie to the place. The rain beating the window was only adding to this atmosphere. As we were discussing, I was contemplating the rain drops rolling down the glass, on the other side of the window; gaining speed and chasing each others on the smooth surface, then being pushed out of their trajectory by a sudden burst of wind, and gaining momentum again. He suddently exclaimed:
-
-*'Did you know that Hoenderloo is the greenest city in the Netherlands?'*
-
-I was shocked, not only this had absolutely nothing to do with our conversation, but also I had always thought that Wageningen was the greenest city in The Netherlands. At least that's what I wanted to believe. So that I responded:
-
-*'No way man, it can't be greener than Wageningen. Wageningen is way greener than Hoenderloo.'* Insisting on the "way" and pronouncing Hoenderloo in an English way.
-
-*'Are you sure?'*
-
-*'Definitely!'* I had no idea.
-
-To what he responded, noticing my bluffing face:
-
-*'Haha, if only we could check.'*
-
-''If only ...'', these two words kept bouncing in my mind. So much that I could not follow the rest of our conversation. Whether he was talking about the influence of China on Wageningen architecture, the maximum speed of a Leopard chasing a Gazelle, his last trip to Bolivia or the true origin of the french fries name, I do not remember. I was obsessed by this thought; how could I find which was the greenest place? He did most of the talking, while my mind was trying to organize the ideas and sort preliminary hypotheses. When suddently he got my attention again:
-
-*'Hey let's go!'*
-
-The rain had stopped. We got up, paid our coffees to the counter, exited the cafe and each started walking in a different direction. I had almost reached the end of the street when I turned around and shouted in his direction.
-
-*'I think we can check!'*
-
-*'Check what?'*
-
-I gave him a sign with my arm indicating that it didn't matter and kept walking home.
-
-## Your task
-
-Please help me find out which "municipality" in the Netherlands was the greenest:
-
-* in January;
-* in August;
-* on average over the year.
-
-Visualize the results using maps with proper titles, labels and legends.
-
-## More details
-
-* You can use the MODIS NDVI data available [here](https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/MODIS.zip).
-* [Click here for more information about MODIS data used (i.e. MOD13A3)](https://lpdaac.usgs.gov/dataset_discovery/modis/modis_products_table/mod13a3_v006)
-
-```{block, type="alert alert-info"}
-**Hint:** Use `nlMunicipality <- getData('GADM',country='NLD', level=2)`
-```
-
-## Assessment
-
-The general rubrics will be used for the assessment of your script. These can be found on BlackBoard. The three specific tasks in the rubrics your script will be assessed on are:
-
-Task1: Find the greenest municipality in January and August.
-
-Task2: Find the greenest municipality on average over the year.
-
-Task3: Visualize the results in at least one plot with proper title, legend and labels.
-
-
-## Bonus
-
-You can earn the bonus points by finding and mapping the greenest province in January.
-
-```{block, type="alert alert-info"}
-**Hint:** See `?raster::aggregate`
-```
-
-## Submission
-
-Make sure your script is clear and reproducible. Make a new GitLab project and upload the script there according to the guidelines on BlackBoard. Review the script of another team (see the random team selector Shiny app) tomorrow morning and add an issue t their project with your feedback.
-
-Do not forget to add your teamname, members and date at the top of your script.
--->
 
 <!-- ### Build a calibration dataset in Google Maps -->
 <!-- Below we'll see how we can deal with a calibration dataset in R, for calibrating a classifier. It involves working with `sf data.frame` classes, extracting reflectance data for the corresponding calibration samples, manipulating data frames and building a model that can be used to predict land cover. But first we need to build the calibration dataset (ground truth), and for that we will use Google Maps. -->
