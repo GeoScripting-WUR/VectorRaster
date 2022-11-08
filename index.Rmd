@@ -38,8 +38,6 @@ In this tutorial we will use the *sf* package. This package focuses solely on ve
 
 The GDAL library is well-documented (http://gdal.org/), but with a catch for R and Python programmers. The GDAL (and associated OGR) library and command line tools are all written in C and C++. Bindings are available that allow access from a variety of other languages including R and Python but the documentation is all written for the C++ version of the libraries. This can make reading the documentation rather challenging. Fortunately, the *sf* package, providing GDAL bindings in R, is also well documented with lots of examples. The same is valid for the Python libaries.
 
-Similarly, *rgeos* is an interface to the powerful Geometry Engine Open Source (GEOS) library for all kinds of operations on geometries (buffering, overlaying, area calculations, etc.).
-
 Thus, functionality that you commonly find in expensive GIS software is also available within R, using free but very powerful software libraries. Here is [handy 'cheatsheet'](https://github.com/rstudio/cheatsheets/blob/master/sf.pdf) for spatial operations with *sf*. The functions of the *sf* package are prefixed by `st_`, short for 'spatial type'.
 
 The possibilities are huge. In this course we can only scratch the surface with some essentials, which hopefully invite you to experiment further and use them in your research. Details can be found in the book *Applied Spatial Data Analysis with R* and several vignettes authored by Roger Bivand, Edzer Pebesma and Virgilio Gomez-Rubio.
@@ -69,7 +67,7 @@ As a result, because these functions are only useful for some very particular si
 - Vector to raster: 
   - There is one function that allows to convert a vector object to a raster object. It is the `rasterize()` function.
 - Raster to vector: 
-  - Three functions allow to convert raster data to vector: `as.points()`, `as.contour()` and `as.polygons()` produce `SpatVector` (*terra*) objects. The conversion to polygons can be useful to convert the result of a classification. In that case, set `dissolve =` to `TRUE` so that the polygons with the same attribute value will be dissolved into multi-polygon regions. This option requires the *rgeos* package.
+  - Three functions allow to convert raster data to vector: `as.points()`, `as.contour()` and `as.polygons()` produce `SpatVector` (*terra*) objects. The conversion to polygons can be useful to convert the result of a classification. In that case, set `dissolve =` to `TRUE` so that the polygons with the same attribute value will be dissolved into multi-polygon regions. 
 
 ### Geometric operations
 
@@ -111,19 +109,19 @@ Step by step we will:
 # Install necessary packages and load them
 if(!"terra" %in% rownames(installed.packages())){install.packages("terra")}
 if(!"sf" %in% rownames(installed.packages())){install.packages("sf")}
-if(!"rgeos" %in% rownames(installed.packages())){install.packages("rgeos")}
 
 library(terra)
 library(sf)
-library(rgeos)
 
 # Create data directory if it does not yet exist
 if (!dir.exists("data")) {
   dir.create("data")
 }
 
-# Download, unzip and load the data
+# Download to data directory
 download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/landsat8.zip', destfile = 'data/landsat8.zip', method = 'auto')
+
+# Unzip to data directory
 unzip('data/landsat8.zip', exdir = "data")
 
 # Identify the right file
@@ -251,9 +249,12 @@ You can try for yourself and e.g. start by converting them to KML and opening th
 ```
 
 ```{r, eval=FALSE}
+# Create output directory if it does not yet exist
+if (!dir.exists("output")) {
+  dir.create("output")
+}
 # Try to export the simple feature to a KML. What happens? ps. The coordinate system of KML is geographic (latitude/longitude) on the World Geodetic System of 1984 (WGS84) datum. 
-outKML <- "data/water.kml"
-try(st_write(water, "data/water.kml", driver = "kml", delete_dsn = ifelse(file.exists(outKML), TRUE, FALSE)))
+try(st_write(water, "output/water.kml", driver = "kml", delete_dsn = ifelse(file.exists(outKML), TRUE, FALSE)))
 
 # Note that the code above checks for existence of the KML file and sets the delete_dsn option to true or false accordingly
 ```
@@ -263,30 +264,17 @@ You can now open the created `water.kml` file in [Google My Maps](https://mymaps
 You can also try out other formats like e.g. `GeoJSON`.
 ```
 
-<!-- ## This section is an idea for 2022 -->
-
-<!-- # Extract raster values along a transect in Wageningen -->
-
-<!-- - first create two points -->
-<!-- - draw a line (google?) -->
-<!-- - then use that line to extract the data -->
-<!-- - write lines out in different formats -->
-<!-- - (optionally - reproject?) -->
-
-<!-- # old - and will be replaced by some material from the vector tutorial -->
-<!-- https://geoscripting-wur.github.io/IntroToVector/ (this page will not be used in the future) -->
-
 # Extract raster values along a transect
 
-Another use of the `extract()` function can be to visualize or analyse data along transects.
-In the following example, we will run a transect across Belgium and visualize the change in elevation.
+Another use of the `extract()` function can be to visualize or analyse data along transects. In the following example, we will run a transect across Belgium and visualize the change in elevation.
 
-Let's first download the elevation data of Belgium, using the `getData()` function of the raster package.
+Let's first download the elevation data of Belgium:
 
 ```{r}
-## Download data
-bel <- getData('alt', country='BEL', mask=TRUE)
-## Display metadata
+# Download data
+bel <- rast(getData('alt', country='BEL', mask=TRUE))
+
+# Display metadata
 bel
 ```
 
@@ -300,89 +288,102 @@ plot(bel)
 
 Everything seems correct.
 
-We want to look at a transect, which we can draw by hand by selecting two points by clicking. The `drawLine()` function will help us do that. Once you run the function, you will be able to click in the plotting window of R (The `bel` object should already be present in the plot panel before running `drawLine()`). Click *Finish* or right-click on the plot once you have selected the two extremities of the line.
+We want to look at a transect, which we can draw by hand by selecting two points by clicking. The `draw('line')` function will help us do that. Once you run the function, you will be able to click in the plotting window of R (The `bel` object should already be present in the plot panel before running `draw('line')`). Press *esc* once you have selected the two extremities of the line.
 
 
 ```{r, eval=FALSE}
-line <- drawLine()
+line <- draw('line')
 ```
 
 ```{r, echo=FALSE, fig.align='center'}
-line <- readRDS('data/line.rds')
+line <- vect(readRDS('data/line.rds'))
 plot(bel)
 plot(line, add=TRUE)
 ```
 
-Then the elevation values can simply be extracted using `raster::extract()`. Note the use of the `along=` argument which ensures that the samples remain in order along the segment.
+Let's first write this line to a file, using a few different file formats. Note that `draw()` returns a SpatVector. That means we cannot (directly) use `st_write()` here like we did before. However, one option is making use of `writeVector()` from the terra package. After writing to disk, you might try opening these new files in R, or in different software, such as QGIS or ArcGIS.
 
 ```{r}
-alt <- extract(bel, line, along = TRUE)
+# To a GeoJSON
+writeVector(line, 'output/line.json')
+
+# To an ESRI Shapefile
+writeVector(line, 'output/line.shp')
+```
+
+Now the elevation values can simply be extracted using `extract()`. Note the use of the `along=` argument which ensures that the samples remain in order along the segment.
+
+```{r}
+alt <- extract(bel, line)
 ```
 
 We can already plot the result as follows, but the x axis does not really provide any indication of distance.
 
 ```{r, fig.align='center'}
-plot(alt[[1]], type = 'l', ylab = "Altitude (m)")
+plot(alt$BEL_msk_alt, type = 'l', ylab = "Altitude (m)")
 ```
 
-In order to make an index for the x axis, we can calculate the distance between the two extremities of the transect, using `distHaversine()` from the *geosphere* package.
+# Extra
+Check out [this overview](https://mhallwor.github.io/_pages/MakingMaps) of examples for creating static and interactive maps in R, making use of packages like [mapview](https://r-spatial.github.io/mapview/) and [leaflet](https://rstudio.github.io/leaflet/).
 
-```{r}
-# check for the geosphere package and install if missing
-if(!"geosphere" %in% rownames(installed.packages())){install.packages("geosphere")}
-```
+<!-- In order to make an index for the x axis, we can calculate the distance between the two extremities of the transect, using `distHaversine()` from the *geosphere* package. -->
 
-```{r, eval=TRUE}
-library(geosphere)
+<!-- ```{r} -->
+<!-- # check for the geosphere package and install if missing -->
+<!-- if(!"geosphere" %in% rownames(installed.packages())){install.packages("geosphere")} -->
+<!-- ``` -->
 
-## convert line to sf and assign the crs
-line2 <- st_as_sf(line)
-st_crs(line2) <- 4326
+<!-- ```{r, eval=TRUE} -->
+<!-- library(geosphere) -->
 
-## Use sf to calculate the Great Circle distance between the two ends of the line
-dist_sf <- st_length(line2)
+<!-- ## convert line to sf and assign the crs -->
+<!-- line2 <- st_as_sf(line) -->
+<!-- st_crs(line2) <- 4326 -->
 
-## Use geosphere to calculate the Great Circle distance between the two ends of the line
-start <- sf::st_coordinates(line2)[1,1:2] ## get the coordinate pairs for the start and end of the line
-end <- sf::st_coordinates(line2)[2,1:2]
+<!-- ## Use sf to calculate the Great Circle distance between the two ends of the line -->
+<!-- dist_sf <- st_length(line2) -->
 
-dist_geosphere <- distHaversine(start,end)
+<!-- ## Use geosphere to calculate the Great Circle distance between the two ends of the line -->
+<!-- start <- sf::st_coordinates(line2)[1,1:2] ## get the coordinate pairs for the start and end of the line -->
+<!-- end <- sf::st_coordinates(line2)[2,1:2] -->
 
-## print the results
-writeLines(c(paste0(as.integer(dist_sf), "m - sf Great Circle [WGS coords]"), paste0(as.integer(dist_geosphere), "m - geosphere Great Circle [WGS coords]")))
+<!-- dist_geosphere <- distHaversine(start,end) -->
 
-```
-```{block, type="alert alert-success"}
-> **Question 2:** Why is there a difference between the line lengths calculated by *sf* and *geosphere*?
+<!-- ## print the results -->
+<!-- writeLines(c(paste0(as.integer(dist_sf), "m - sf Great Circle [WGS coords]"), paste0(as.integer(dist_geosphere), "m - geosphere Great Circle [WGS coords]"))) -->
 
-*Hint:* Look at the help page of the `distHaversine()` function. Also see the `distVincentyEllipsoid()` function. Does this one provide a more accurate distance?
-```
+<!-- ``` -->
+<!-- ```{block, type="alert alert-success"} -->
+<!-- > **Question 2:** Why is there a difference between the line lengths calculated by *sf* and *geosphere*? -->
 
-Note that there is a small approximation on the position of the line and the distances between the samples as the real shortest path between two points is not a straight line in lat-long, while the distance we just calculated is the shortest path. For short distances, as in the example, this is acceptable.
-Otherwise, we could also have projected the raster and the line to a projected coordinate system.
+<!-- *Hint:* Look at the help page of the `distHaversine()` function. Also see the `distVincentyEllipsoid()` function. Does this one provide a more accurate distance? -->
+<!-- ``` -->
 
-Calculating long distances accurately on an imperfect spheroid is very tricky. The *geosphere distHaversine()* assumes a perfectly spherical projection. Take care when using these functions that you understand how the distance is being calculated and what implications that may have for your work.
+<!-- Note that there is a small approximation on the position of the line and the distances between the samples as the real shortest path between two points is not a straight line in lat-long, while the distance we just calculated is the shortest path. For short distances, as in the example, this is acceptable. -->
+<!-- Otherwise, we could also have projected the raster and the line to a projected coordinate system. -->
 
-We will continue using the distance calculated by *sf*.
+<!-- Calculating long distances accurately on an imperfect spheroid is very tricky. The *geosphere distHaversine()* assumes a perfectly spherical projection. Take care when using these functions that you understand how the distance is being calculated and what implications that may have for your work. -->
 
-```{r, eval = TRUE}
-## Format an array for use as x axis index with the same length as the alt[[1]] array
-distanceVector <- seq(0, as.numeric(dist_sf), along.with = alt[[1]])
-```
+<!-- We will continue using the distance calculated by *sf*. -->
 
-Let's now visualize the final output.
+<!-- ```{r, eval = TRUE} -->
+<!-- ## Format an array for use as x axis index with the same length as the alt[[1]] array -->
+<!-- distanceVector <- seq(0, as.numeric(dist_sf), along.with = alt[[1]]) -->
+<!-- ``` -->
 
-```{r, fig.align='center', fig.show='hold', eval = TRUE}
-## Visualize the output
-plot(bel, main = 'Altitude (m)')
-plot(line, add = TRUE)
-plot(distanceVector/1000, alt[[1]], type = 'l',
-     main = 'Altitude transect Belgium',
-     xlab = 'Distance (Km)',
-     ylab = 'Altitude (m)',
-     las = 1)
+<!-- Let's now visualize the final output. -->
 
-```
+<!-- ```{r, fig.align='center', fig.show='hold', eval = TRUE} -->
+<!-- ## Visualize the output -->
+<!-- plot(bel, main = 'Altitude (m)') -->
+<!-- plot(line, add = TRUE) -->
+<!-- plot(distanceVector/1000, alt[[1]], type = 'l', -->
+<!--      main = 'Altitude transect Belgium', -->
+<!--      xlab = 'Distance (Km)', -->
+<!--      ylab = 'Altitude (m)', -->
+<!--      las = 1) -->
+
+<!-- ``` -->
 
 
 <!-- # Extract raster values randomly using the `sampleRandom()` function -->
