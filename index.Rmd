@@ -278,8 +278,6 @@ bel <- rast(getData('alt', country='BEL', mask=TRUE))
 bel
 ```
 
-`bel` is a `RasterLayer`.
-
 We can start by visualizing the data.
 
 ```{r, fig.align='center'}
@@ -317,7 +315,7 @@ Now the elevation values can simply be extracted using `extract()`. Note the use
 alt <- extract(bel, line)
 ```
 
-We can already plot the result as follows, but the x axis does not really provide any indication of distance.
+We can plot the result as follows. However, note that the x axis does not really provide any indication of distance, as not all cells are equally distant from each other!
 
 ```{r, fig.align='center'}
 plot(alt$BEL_msk_alt, type = 'l', ylab = "Altitude (m)")
