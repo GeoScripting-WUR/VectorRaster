@@ -93,8 +93,6 @@ Raw raster data do not usually conform to any notion of administrative or geogra
 
 # Visualise spatial vector layer together with a Landsat 8 images from Wageningen 
 
-The example uses the same data as you used in the [exercise](http://geoscripting-wur.github.io/IntroToRaster/#exercise-design-a-pre-processing-chain-to-assess-change-in-ndvi-over-time) of the raster tutorial.
-
 Step by step we will:
 
 - Download the Landsat 8 data of Wageningen
@@ -133,6 +131,7 @@ wagLandsat <- rast(landsatPath)
 library(terra)
 library(sf)
 library(raster)
+
 wagLandsat <- rast(brick('data/LC81970242014109LGN00.grd'))
 ```
 
