@@ -173,7 +173,7 @@ wagContour <- nlCitySf[nlCitySf$NAME_2 == 'Wageningen',]
 We can use the resulting `wagContour` object, to mask the values out of Wageningen, but first, since the two objects are in different coordinate systems, we need to reproject the projection of one to the other.
 
 ```{block, type="alert alert-success"}
-> **Question 1:** Would you rather reproject a raster or a vector layer? Give two reasons why you would choose to reproject a raster or vector.
+> **Question:** Would you rather reproject a raster or a vector layer? Give two reasons why you would choose to reproject a raster or vector.
 ```
 
 ```{r, message=FALSE}
@@ -239,28 +239,35 @@ plotRGB(wagLandsatSubW, 5, 4, 3)
 plot(st_geometry(waterUTM), col = 'lightblue', add = TRUE, border = '#3A9AF0', lwd = 1) # use a site such as https://htmlcolorcodes.com/ to find the hexidecimal code for colours
 ```
 
-```{block type="alert alert-info"}
 Also, some of our friends want these exact data too (e.g. the `water` polygon object). 
 
 One friend of ours is a software engineer and he wants a GeoJSON. Another friend is a GIS-analyst in QGIS and as a backup he wants the file in Geographic Markup Language (GML). These fileformats (GeoJSON and GML, but also KML and Shapefile) are commonly used in spatial analysis. Let’s try to give them the files in those formats! 
 
 You can try for yourself and e.g. start by converting them to KML and opening them in Google My Maps (https://mymaps.google.com/).
-```
+
 
 ```{r, eval=FALSE}
 # Create output directory if it does not yet exist
 if (!dir.exists("output")) {
   dir.create("output")
 }
-# Try to export the simple feature to a KML. What happens? ps. The coordinate system of KML is geographic (latitude/longitude) on the World Geodetic System of 1984 (WGS84) datum. 
-try(st_write(water, "output/water.kml", driver = "kml", delete_dsn = ifelse(file.exists(outKML), TRUE, FALSE)))
+
+# Export the simple feature to a KML. 
+try(st_write(water, "output/water.kml", driver = "kml", delete_dsn = ifelse(file.exists("output/water.kml"), TRUE, FALSE)))
 
 # Note that the code above checks for existence of the KML file and sets the delete_dsn option to true or false accordingly
 ```
 
-```{block type="alert alert-info"}
 You can now open the created `water.kml` file in [Google My Maps](https://mymaps.google.com/) or *Google Earth Pro*.
-You can also try out other formats like e.g. `GeoJSON`.
+You can also try out other formats like e.g. `GeoJSON`. Another option for visualisation is an interactive map using [mapview](https://r-spatial.github.io/mapview/index.html), which in its turn is based on [leaflet](https://rstudio.github.io/leaflet/). The output of the simple example below can be viewed [here](mapview.html).
+
+```{r, eval=TRUE, warning=FALSE}
+# Install and load library
+if(!"mapview" %in% rownames(installed.packages())){install.packages("mapview")}
+library(mapview)
+
+# Plot the water polygons
+mapshot(mapview(water), url = 'mapview.html')
 ```
 
 # Extract raster values along a transect
@@ -300,7 +307,7 @@ plot(line, add=TRUE)
 
 Let's first write this line to a file, using a few different file formats. Note that `draw()` returns a SpatVector. That means we cannot (directly) use `st_write()` here like we did before. However, one option is making use of `writeVector()` from the terra package. After writing to disk, you might try opening these new files in R, or in different software, such as QGIS or ArcGIS.
 
-```{r}
+```{r, eval=FALSE}
 # To a GeoJSON
 writeVector(line, 'output/line.json')
 
@@ -308,7 +315,7 @@ writeVector(line, 'output/line.json')
 writeVector(line, 'output/line.shp')
 ```
 
-Now the elevation values can simply be extracted using `extract()`. Note the use of the `along=` argument which ensures that the samples remain in order along the segment.
+Now the elevation values can simply be extracted using `extract()`.
 
 ```{r}
 alt <- extract(bel, line)
