@@ -103,7 +103,7 @@ Step by step we will:
 
 ## Prepare the data
 
-```{r, eval=FALSE}
+```{r}
 # Install necessary packages and load them
 if(!"terra" %in% installed.packages()){install.packages("terra")}
 if(!"sf" %in% installed.packages()){install.packages("sf")}
@@ -117,22 +117,14 @@ if (!dir.exists("data")) {
 }
 
 # Download to data directory
-download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/landsat8.zip', destfile = 'data/landsat8.zip')
+download.file(url = 'https://github.com/GeoScripting-WUR/VectorRaster/releases/download/tutorial-data/landsat8.zip', destfile = 'data/landsat8.zip')
 
 # Unzip to data directory
 unzip('data/landsat8.zip', exdir = "data")
 
 # Identify the right file
-landsatPath <- list.files(path = "data/", pattern = glob2rx('LC8*.grd'), full.names = TRUE)
+landsatPath <- list.files(path = "data/", pattern = glob2rx('LC8*.tif'), full.names = TRUE)
 wagLandsat <- rast(landsatPath)
-```
-
-```{r, echo=FALSE}
-library(terra)
-library(sf)
-library(raster)
-
-wagLandsat <- rast(brick('data/LC81970242014109LGN00.grd'))
 ```
 
 We can start by visualizing the data. Since it is a multispectral image, we can use `plotRGB()` to do so.
@@ -210,9 +202,9 @@ We also have a water mask of Wageningen in vector format. Let's download it and 
 Important functions are `st_read` and `st_write`. These are very powerful function that enable reading and writing simple features or layers from a file or data base.
 ```
 
-```{r, eval=FALSE}
+```{r}
 # Download and unzip files
-download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/wageningenWater.zip', destfile = 'data/wageningenWater.zip')
+download.file(url = 'https://github.com/GeoScripting-WUR/VectorRaster/releases/download/tutorial-data/wageningenWater.zip', destfile = 'data/wageningenWater.zip')
 unzip('data/wageningenWater.zip', exdir = "data")
 
 # Load the Water Shapefile directly as an sf object
@@ -220,11 +212,6 @@ water <- st_read('data/Water.shp')
 names(water) # check attribute columns
 
 # Transform the water object to match the projection of our other data
-waterUTM <- st_transform(water, targetCRS)
-```
-
-```{r, echo=FALSE}
-water <- st_read('data/Water.shp')
 waterUTM <- st_transform(water, targetCRS)
 ```
 
@@ -277,8 +264,14 @@ Another use of the `extract()` function can be to visualize or analyse data alon
 Let's first download the elevation data of Belgium:
 
 ```{r}
+# Download to data directory
+download.file(url = 'https://github.com/GeoScripting-WUR/VectorRaster/releases/download/tutorial-data/belgium_elev.zip', destfile = 'data/belgium_elev.zip')
+
+# Unzip to data directory
+unzip('data/belgium_elev.zip', exdir = "data")
+
 # Download data
-bel <- rast(getData('alt', country='BEL', mask=TRUE))
+bel <- rast('data/belgium_elev.tif')
 
 # Display metadata
 bel

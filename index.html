@@ -1294,45 +1294,38 @@ Netherlands</li>
 if(!"terra" %in% installed.packages()){install.packages("terra")}
 if(!"sf" %in% installed.packages()){install.packages("sf")}
 
-library(terra)
-library(sf)
-
-# Create data directory if it does not yet exist
-if (!dir.exists("data")) {
-  dir.create("data")
-}
-
-# Download to data directory
-download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/landsat8.zip', destfile = 'data/landsat8.zip')
-
-# Unzip to data directory
-unzip('data/landsat8.zip', exdir = "data")
-
-# Identify the right file
-landsatPath <- list.files(path = "data/", pattern = glob2rx('LC8*.grd'), full.names = TRUE)
-wagLandsat <- rast(landsatPath)</code></pre>
-</div>
-<div class="row">
+library(terra)</code></pre>
 <button class="message R toggle btn btn-xs btn-info">
 <span class="glyphicon glyphicon-chevron-down"></span> R message
 </button>
 <pre style=""><code class="message r">## terra 1.6.17
 </code></pre>
+<button class="source R toggle btn btn-xs btn-primary">
+<span class="glyphicon glyphicon-chevron-down"></span> R source
+</button>
+<pre style=""><code class="source r">library(sf)</code></pre>
 <button class="message R toggle btn btn-xs btn-info">
 <span class="glyphicon glyphicon-chevron-down"></span> R message
 </button>
 <pre style=""><code class="message r">## Linking to GEOS 3.10.2, GDAL 3.4.1, PROJ 7.2.1; sf_use_s2() is TRUE
 </code></pre>
-<button class="message R toggle btn btn-xs btn-info">
-<span class="glyphicon glyphicon-chevron-down"></span> R message
+<button class="source R toggle btn btn-xs btn-primary">
+<span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
-<pre style=""><code class="message r">## Loading required package: sp
-</code></pre>
-<button class="warning R toggle btn btn-xs btn-warning">
-<span class="glyphicon glyphicon-chevron-down"></span> R warning
-</button>
-<pre style=""><code class="warning r">## Warning: Unhandled datatype=INT2S (GDAL error 1)
-</code></pre>
+<pre style=""><code class="source r"># Create data directory if it does not yet exist
+if (!dir.exists("data")) {
+  dir.create("data")
+}
+
+# Download to data directory
+download.file(url = 'https://github.com/GeoScripting-WUR/VectorRaster/releases/download/tutorial-data/landsat8.zip', destfile = 'data/landsat8.zip')
+
+# Unzip to data directory
+unzip('data/landsat8.zip', exdir = "data")
+
+# Identify the right file
+landsatPath <- list.files(path = "data/", pattern = glob2rx('LC8*.tif'), full.names = TRUE)
+wagLandsat <- rast(landsatPath)</code></pre>
 </div>
 <p>We can start by visualizing the data. Since it is a multispectral
 image, we can use <code>plotRGB()</code> to do so.</p>
@@ -1486,17 +1479,11 @@ features or layers from a file or data base.
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
 <pre style=""><code class="source r"># Download and unzip files
-download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/wageningenWater.zip', destfile = 'data/wageningenWater.zip')
+download.file(url = 'https://github.com/GeoScripting-WUR/VectorRaster/releases/download/tutorial-data/wageningenWater.zip', destfile = 'data/wageningenWater.zip')
 unzip('data/wageningenWater.zip', exdir = "data")
 
 # Load the Water Shapefile directly as an sf object
-water <- st_read('data/Water.shp')
-names(water) # check attribute columns
-
-# Transform the water object to match the projection of our other data
-waterUTM <- st_transform(water, targetCRS)</code></pre>
-</div>
-<div class="row">
+water <- st_read('data/Water.shp')</code></pre>
 <button class="output R toggle btn btn-xs btn-success">
 <span class="glyphicon glyphicon-chevron-down"></span> R output
 </button>
@@ -1509,6 +1496,26 @@ waterUTM <- st_transform(water, targetCRS)</code></pre>
 ## Bounding box:  xmin: 156404.9 ymin: 437540.3 xmax: 181084.9 ymax: 448260.9
 ## Projected CRS: Amersfoort / RD New
 </code></pre>
+<button class="source R toggle btn btn-xs btn-primary">
+<span class="glyphicon glyphicon-chevron-down"></span> R source
+</button>
+<pre style=""><code class="source r">names(water) # check attribute columns</code></pre>
+<button class="output R toggle btn btn-xs btn-success">
+<span class="glyphicon glyphicon-chevron-down"></span> R output
+</button>
+<pre style=""><code class="output r">##  [1] "IDENTIFICA" "TOP10_ID"   "BREEDTE"    "BREEDTEKLA" "BRUGNAAM"  
+##  [6] "FUNCTIE"    "FYSIEKVOOR" "FYSIEKVO_1" "HOOFDAFWAT" "NAAM_FR_CS"
+## [11] "NAAM_NL_CS" "SCHEEPSLAA" "SLUISNAAM"  "STROOMRICH" "TYPEINFRAS"
+## [16] "TYPEWATER"  "VOORKOMENW" "HOOGTENIVE" "STATUS"     "DIMENSIE"  
+## [21] "OBJECTBEGI" "OBJECTEIND" "VERSIEBEGI" "VERSIEEIND" "BRONACTUAL"
+## [26] "BRONBESCHR" "BRONNAUWKE" "BRONTYPE"   "TDN_CODE"   "VISUALISAT"
+## [31] "GEOMETRIE_" "GEOMETRI_1" "geometry"
+</code></pre>
+<button class="source R toggle btn btn-xs btn-primary">
+<span class="glyphicon glyphicon-chevron-down"></span> R source
+</button>
+<pre style=""><code class="source r"># Transform the water object to match the projection of our other data
+waterUTM <- st_transform(water, targetCRS)</code></pre>
 </div>
 <p>Note the use of <code>inverse = TRUE</code> in the code below, to
 <em>mask</em> the pixels that intersect with the features of the vector
@@ -1583,23 +1590,16 @@ elevation.</p>
 <button class="source R toggle btn btn-xs btn-primary">
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
-<pre style=""><code class="source r"># Download data
-bel <- rast(getData('alt', country='BEL', mask=TRUE))</code></pre>
-<button class="warning R toggle btn btn-xs btn-warning">
-<span class="glyphicon glyphicon-chevron-down"></span> R warning
-</button>
-<pre style=""><code class="warning r">## Warning in getData("alt", country = "BEL", mask = TRUE): getData will be removed in a future version of raster
-## . Please use the geodata package instead
-</code></pre>
-<button class="warning R toggle btn btn-xs btn-warning">
-<span class="glyphicon glyphicon-chevron-down"></span> R warning
-</button>
-<pre style=""><code class="warning r">## Warning: Unhandled datatype=INT2S (GDAL error 1)
-</code></pre>
-<button class="source R toggle btn btn-xs btn-primary">
-<span class="glyphicon glyphicon-chevron-down"></span> R source
-</button>
-<pre style=""><code class="source r"># Display metadata
+<pre style=""><code class="source r"># Download to data directory
+download.file(url = 'https://github.com/GeoScripting-WUR/VectorRaster/releases/download/tutorial-data/belgium_elev.zip', destfile = 'data/belgium_elev.zip')
+
+# Unzip to data directory
+unzip('data/belgium_elev.zip', exdir = "data")
+
+# Download data
+bel <- rast('data/belgium_elev.tif')
+
+# Display metadata
 bel</code></pre>
 <button class="output R toggle btn btn-xs btn-success">
 <span class="glyphicon glyphicon-chevron-down"></span> R output
@@ -1608,8 +1608,8 @@ bel</code></pre>
 ## dimensions  : 264, 480, 1  (nrow, ncol, nlyr)
 ## resolution  : 0.008333333, 0.008333333  (x, y)
 ## extent      : 2.5, 6.5, 49.4, 51.6  (xmin, xmax, ymin, ymax)
-## coord. ref. : +proj=longlat +datum=WGS84 +no_defs 
-## source      : memory 
+## coord. ref. : lon/lat WGS 84 (EPSG:4326) 
+## source      : belgium_elev.tif 
 ## name        : BEL_msk_alt 
 ## min value   :        -105 
 ## max value   :         691
