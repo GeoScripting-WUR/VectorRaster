@@ -105,8 +105,8 @@ Step by step we will:
 
 ```{r, eval=FALSE}
 # Install necessary packages and load them
-if(!"terra" %in% rownames(installed.packages())){install.packages("terra")}
-if(!"sf" %in% rownames(installed.packages())){install.packages("sf")}
+if(!"terra" %in% installed.packages()){install.packages("terra")}
+if(!"sf" %in% installed.packages()){install.packages("sf")}
 
 library(terra)
 library(sf)
@@ -117,7 +117,7 @@ if (!dir.exists("data")) {
 }
 
 # Download to data directory
-download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/landsat8.zip', destfile = 'data/landsat8.zip', method = 'auto')
+download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/landsat8.zip', destfile = 'data/landsat8.zip')
 
 # Unzip to data directory
 unzip('data/landsat8.zip', exdir = "data")
@@ -150,7 +150,7 @@ plotRGB(wagLandsat, 5, 4, 3)
 
 ```{r}
 # Download and unzip the Dutch municipalities boundaries
-download.file(url = 'https://github.com/GeoScripting-WUR/Scripting4GeoIntro/releases/download/data/data.zip', destfile = 'data/GADM.zip', method = 'auto')
+download.file(url = 'https://github.com/GeoScripting-WUR/Scripting4GeoIntro/releases/download/data/data.zip', destfile = 'data/GADM.zip')
 unzip('data/GADM.zip', exdir = "data")
 
 # Load level 2 dataset
@@ -212,7 +212,7 @@ Important functions are `st_read` and `st_write`. These are very powerful functi
 
 ```{r, eval=FALSE}
 # Download and unzip files
-download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/wageningenWater.zip', destfile = 'data/wageningenWater.zip', method = 'auto')
+download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/wageningenWater.zip', destfile = 'data/wageningenWater.zip')
 unzip('data/wageningenWater.zip', exdir = "data")
 
 # Load the Water Shapefile directly as an sf object
@@ -263,7 +263,7 @@ You can also try out other formats like e.g. `GeoJSON`. Another option for visua
 
 ```{r, eval=TRUE, warning=FALSE}
 # Install and load library
-if(!"mapview" %in% rownames(installed.packages())){install.packages("mapview")}
+if(!"mapview" %in% installed.packages()){install.packages("mapview")}
 library(mapview)
 
 # Plot the water polygons

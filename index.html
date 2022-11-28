@@ -1291,8 +1291,8 @@ Netherlands</li>
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
 <pre style=""><code class="source r"># Install necessary packages and load them
-if(!"terra" %in% rownames(installed.packages())){install.packages("terra")}
-if(!"sf" %in% rownames(installed.packages())){install.packages("sf")}
+if(!"terra" %in% installed.packages()){install.packages("terra")}
+if(!"sf" %in% installed.packages()){install.packages("sf")}
 
 library(terra)
 library(sf)
@@ -1303,7 +1303,7 @@ if (!dir.exists("data")) {
 }
 
 # Download to data directory
-download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/landsat8.zip', destfile = 'data/landsat8.zip', method = 'auto')
+download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/landsat8.zip', destfile = 'data/landsat8.zip')
 
 # Unzip to data directory
 unzip('data/landsat8.zip', exdir = "data")
@@ -1359,7 +1359,7 @@ plotRGB(wagLandsat, 5, 4, 3) </code></pre>
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
 <pre style=""><code class="source r"># Download and unzip the Dutch municipalities boundaries
-download.file(url = 'https://github.com/GeoScripting-WUR/Scripting4GeoIntro/releases/download/data/data.zip', destfile = 'data/GADM.zip', method = 'auto')
+download.file(url = 'https://github.com/GeoScripting-WUR/Scripting4GeoIntro/releases/download/data/data.zip', destfile = 'data/GADM.zip')
 unzip('data/GADM.zip', exdir = "data")
 
 # Load level 2 dataset
@@ -1486,7 +1486,7 @@ features or layers from a file or data base.
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
 <pre style=""><code class="source r"># Download and unzip files
-download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/wageningenWater.zip', destfile = 'data/wageningenWater.zip', method = 'auto')
+download.file(url = 'https://raw.githubusercontent.com/GeoScripting-WUR/VectorRaster/gh-pages/data/wageningenWater.zip', destfile = 'data/wageningenWater.zip')
 unzip('data/wageningenWater.zip', exdir = "data")
 
 # Load the Water Shapefile directly as an sf object
@@ -1566,7 +1566,7 @@ simple example below can be viewed <a href="mapview.html">here</a>.</p>
 <span class="glyphicon glyphicon-chevron-down"></span> R source
 </button>
 <pre style=""><code class="source r"># Install and load library
-if(!"mapview" %in% rownames(installed.packages())){install.packages("mapview")}
+if(!"mapview" %in% installed.packages()){install.packages("mapview")}
 library(mapview)
 
 # Plot the water polygons
