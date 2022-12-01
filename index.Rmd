@@ -44,7 +44,7 @@ The possibilities are huge. In this course we can only scratch the surface with 
 
 ### Raster and vector integration and conversion
 
-Historically, the first package handling vectors in R was the *sp* package, and the first package handling rasters was the *raster* package. They had cross-integration so that you could perform operations such as cropping a raster by a vector or extracting raster information over a vector location. However, the *sp* package got deprecated and *sf* was made as its successor, with much easier handling of the data (as a regular *data.frame*). Many of the packages that previously handled *sp* objects, including *raster*, got updated to also handle *sf* objects. Next, the *stars* package was developed by the creators of the *sf* package as a means of having multidimensional rasters. However, the older *raster* package was still the go-to solution for raster handling in R. Finally, as you noticed in tutorial 4, in 2020 the *raster* package was deprecated and replaced with the *terra* package, which is a much faster C++ version of *raster*, but it also includes its own definition of vector data.
+Historically, the first package handling vectors in R was the *sp* package, and the first package handling rasters was the *raster* package. They had cross-integration so that you could perform operations such as cropping a raster by a vector or extracting raster information over a vector location. However, the *sp* package got deprecated and *sf* was made as its successor, with much easier handling of the data (as a regular *data.frame*). Many of the packages that previously handled *sp* objects, including *raster*, got updated to also handle *sf* objects. Next, the *stars* package was developed by the creators of the *sf* package as a means of having multidimensional rasters. However, the older *raster* package was still the go-to solution for raster handling in R. Finally, as you noticed in a previous tutorial, in 2020 the *raster* package was deprecated and replaced with the *terra* package, which is a much faster C++ version of *raster*, but it also includes its own definition of vector data.
 
 The result is that some packages provide or work with *sp*, *sf* and *terra* vectors, and some provide or work with *raster*, *stars* and *terra* rasters. This can be quite confusing. Therefore, in the course we currently use only the *sf* package for handling vectors and the *terra* package for handling rasters. The workflow is then to convert any object that is not *sf* or *terra* into *sf* or *terra*, do processing in *sf* and/or *terra*, and optionally convert the objects back if integration with some other package is necessary (e.g. `sf` to `SpatVector` for use in *terra* in some cases). Below is a matrix showing how to convert the various objects.
 
@@ -165,7 +165,7 @@ wagContour <- nlCitySf[nlCitySf$NAME_2 == 'Wageningen',]
 We can use the resulting `wagContour` object, to mask the values out of Wageningen, but first, since the two objects are in different coordinate systems, we need to reproject the projection of one to the other.
 
 ```{block, type="alert alert-success"}
-> **Question:** Would you rather reproject a raster or a vector layer? Give two reasons why you would choose to reproject a raster or vector.
+> **Question 1:** Would you rather reproject a raster or a vector layer? Give two reasons why you would choose to reproject a raster or vector.
 ```
 
 ```{r, message=FALSE}
@@ -199,7 +199,7 @@ In the figure above, the left panel displays the output of `crop`, while the sec
 We also have a water mask of Wageningen in vector format. Let's download it and also reproject it to the CRS of the Landsat data.
 
 ```{block type="alert alert-info"}
-Important functions are `st_read` and `st_write`. These are very powerful function that enable reading and writing simple features or layers from a file or data base.
+Important functions are `st_read` and `st_write`. These are very powerful functions that enable reading and writing simple features or layers from a file or data base.
 ```
 
 ```{r}
@@ -248,13 +248,17 @@ try(st_write(water, "output/water.kml", driver = "kml", delete_dsn = ifelse(file
 You can now open the created `water.kml` file in [Google My Maps](https://mymaps.google.com/) or *Google Earth Pro*.
 You can also try out other formats like e.g. `GeoJSON`. Another option for visualisation is an interactive map using [mapview](https://r-spatial.github.io/mapview/index.html), which in its turn is based on [leaflet](https://rstudio.github.io/leaflet/). The output of the simple example below can be viewed [here](mapview.html).
 
-```{r, eval=TRUE, warning=FALSE}
+```{r, eval=FALSE, warning=FALSE}
 # Install and load library
 if(!"mapview" %in% installed.packages()){install.packages("mapview")}
 library(mapview)
 
 # Plot the water polygons
-mapshot(mapview(water), url = 'mapview.html')
+map <- mapview(water)
+map
+
+# Save to file
+mapshot(map, url = 'mapview.html')
 ```
 
 # Extract raster values along a transect
@@ -298,14 +302,14 @@ plot(bel)
 plot(line, add=TRUE)
 ```
 
-Let's first write this line to a file, using a few different file formats. Note that `draw()` returns a SpatVector. That means we cannot (directly) use `st_write()` here like we did before. However, one option is making use of `writeVector()` from the terra package. After writing to disk, you might try opening these new files in R, or in different software, such as QGIS or ArcGIS.
+Let's first write this line to a file, using a few different file formats. Note that `draw()` returns a SpatVector. That means we cannot (directly) use `st_write()` here like we did before. Using the overview table at the start of this tutorial, we can change that using `st_as_sf()`. After writing to disk, you might try opening these new files in R, or in different software, such as QGIS or ArcGIS.
 
 ```{r, eval=FALSE}
 # To a GeoJSON
-writeVector(line, 'output/line.json')
+st_write(st_as_sf(line), 'output/line.geojson')
 
 # To an ESRI Shapefile
-writeVector(line, 'output/line.shp')
+st_write(st_as_sf(line), 'output/line.shp')
 ```
 
 Now the elevation values can simply be extracted using `extract()`.
@@ -314,10 +318,14 @@ Now the elevation values can simply be extracted using `extract()`.
 alt <- extract(bel, line)
 ```
 
-We can plot the result as follows. However, note that the x axis does not really provide any indication of distance, as not all cells are equally distant from each other!
+We can plot the result as follows.
 
 ```{r, fig.align='center'}
 plot(alt$BEL_msk_alt, type = 'l', ylab = "Altitude (m)")
+```
+
+```{block, type="alert alert-success"}
+> **Question 2:** Take a look at the x-axis of the graph above. What unit corresponds to the given values? Can you think of interpretation problems when following the method we apply here?
 ```
 
 # Extra
