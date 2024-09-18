@@ -259,6 +259,7 @@ You can also try out other formats like e.g. `GeoJSON`. Another option for visua
 ```{r, eval=FALSE, warning=FALSE}
 # Install and load library
 if(!"mapview" %in% installed.packages()){install.packages("mapview")}
+if(!"webshot" %in% installed.packages()){install.packages("webshot")}
 library(mapview)
 
 # Plot the water polygons
