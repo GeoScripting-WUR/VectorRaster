@@ -6,6 +6,7 @@ output:
   rmdformats::html_clean:
     title: "Vector - Raster"
     highlight: zenburn
+    md_extensions: -smart
 ---
 
 ```{css, echo=FALSE}
@@ -143,7 +144,7 @@ wagLandsat[wagLandsat < 0] <- NA
 names(wagLandsat) <- c("band1", "band2", "band3", "band4", "band5", "band6", "band7")
 
 # Select which bands to assign to the red, green, and blue colour channels
-plotRGB(wagLandsat, 5, 4, 3)
+plotRGB(wagLandsat, 5, 4, 3, stretch = 'lin')
 ```
 
 We have chosen to visualize the Landsat image as a false color composite, meaning that the chosen bands do not match the RGB channels. Indeed, we have plotted the near-infrared band as red, the red as green, and the green as blue.
@@ -194,8 +195,8 @@ wagLandsatSub <- mask(wagLandsat, wagContourUTM)
 
 # Set graphical parameters (one row and two columns)
 opar <- par(mfrow = c(1, 2))
-plotRGB(wagLandsatCrop, 5, 4, 3)
-plotRGB(wagLandsatSub, 5, 4, 3)
+plotRGB(wagLandsatCrop, 5, 4, 3, stretch = 'lin')
+plotRGB(wagLandsatSub, 5, 4, 3, stretch = 'lin')
 plot(st_geometry(wagContourUTM), add = TRUE, border = 'green', col = 'transparent', lwd = 3) # set fill colour to transparent
 
 # Reset graphical parameters
@@ -230,7 +231,7 @@ Note the use of `inverse = TRUE` in the code below, to *mask* the pixels that in
 wagLandsatSubW <- mask(wagLandsatSub, mask = waterUTM, inverse = TRUE)
 
 # Plot
-plotRGB(wagLandsatSubW, 5, 4, 3)
+plotRGB(wagLandsatSubW, 5, 4, 3, stretch = 'lin')
 plot(st_geometry(waterUTM), col = 'lightblue', add = TRUE, border = '#3A9AF0', lwd = 1) # use a site such as https://htmlcolorcodes.com/ to find the hexidecimal code for colours
 ```
 
