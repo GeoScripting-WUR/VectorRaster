@@ -24,7 +24,7 @@ code[class^="sourceCode python"]::before { content: "Python Source"; }
 code[class^="sourceCode bash"]::before { content: "Bash Source"; }
 ```
 
-<font size="6">[WUR Geoscripting](https://geoscripting-wur.github.io/)</font> <img src="https://www.wur.nl/upload/854757ab-168f-46d7-b415-f8b501eebaa5_WUR_RGB_standard_2021-site.svg" alt="WUR logo" style="height: 35px; margin:inherit;"/>
+<font size="6">[WUR Geoscripting](https://geoscripting-wur.github.io/)</font> <img src="https://geoscripting-wur.github.io/figs/WUR_RGB_standard_2025.svg" alt="WUR logo" style="height: 50px;"/>
 
 # Vector - Raster
 
@@ -299,20 +299,27 @@ plot(bel)
 
 Everything seems correct.
 
-We want to look at a transect, which we can draw by hand by selecting two points by clicking. The `draw('line')` function will help us do that. Once you run the function, you will be able to click in the plotting window of R (The `bel` object should already be present in the plot panel before running `draw('line')`). Press *esc* once you have selected the two extremities of the line.
+We want to look at a transect, which we can draw by using two points. The `vect()` function will help us do that. It requires a matrix of the coordinates. Once you run the function, you will be able to click in the plotting window of R (The `bel` object should already be present in the plot panel before running `draw('line')`). Press *esc* once you have selected the two extremities of the line.
 
 
-```{r, eval=FALSE}
-line <- draw('line')
+```{r}
+# Create two coordinates, start and end of the transect
+p1 <- c(2.75, 51.25) # (lat, lon)
+p2 <- c(6, 49.75)
+
+# Matrix of the coordinates
+coords <- rbind(p1, p2)
+
+# Create the transect between p1 and p2
+line <- vect(coords, type = "lines", crs = "EPSG:4326")
 ```
 
 ```{r, echo=FALSE, fig.align='center'}
-line <- vect(readRDS('data/line.rds'))
 plot(bel)
 plot(line, add=TRUE)
 ```
 
-Let's first write this line to a file, using a few different file formats. Note that `draw()` returns a SpatVector. That means we cannot (directly) use `st_write()` here like we did before. Using the overview table at the start of this tutorial, we can change that using `st_as_sf()`. After writing to disk, you might try opening these new files in R, or in different software, such as QGIS or ArcGIS.
+Let's first write this line to a file, using a few different file formats. Note that `vect()` returns a SpatVector. That means we cannot (directly) use `st_write()` here like we did before. Using the overview table at the start of this tutorial, we can change that using `st_as_sf()`. After writing to disk, you might try opening these new files in R, or in different software, such as QGIS or ArcGIS.
 
 ```{r, eval=FALSE}
 # To a GeoJSON
