@@ -88,15 +88,15 @@ Raw raster data do not usually conform to any notion of administrative or geogra
 - Mask:
   - `mask()` can be used with almost all spatial objects to mask (= set to `NA`) values of a raster object. When used with a polygon object, `mask()` will keep values of the raster overlayed by polygons and mask the values outside of polygons.
   - Note the very useful `inverse =` argument of `mask()`, which allows to mask the inverse of the area covered by the features. We will use this feature of mask later in the tutorial to exclude water areas of a raster, defined in an independent polygon object.
-
-- Buffer:
-  - `buffer()` Calculate a buffer around all cells that are not NA in a SpatRaster, or around the geometries of a SpatVector (currently only implemented for points).
-  - Note that the distance unit of the buffer width parameter is meters if the CRS is (+proj=longlat), and in map units (typically also meters) if not.
-  - See `?buffer` for more info.
  
 - Extract:
   - The most common operation when combining vector and raster data is the extraction, using the function `extract()`. It simply consists in extracting the values of a raster object for locations specified by a vector object (e.g. points).
   - When using `extract()` with polygons or lines, individual features of the vector layer may overlay or intersect several pixels. In that case a function (`fun =`) can be used to summarize the values into one. Note that although most often the functions `min`, `max`, `mean` or `median` are used for the spatial aggregation, also any custom-made function can be used. The result is a matrix of raster values at the given locations. See `?extract()` example section.
+
+- Buffer:
+  - `st_buffer()` Computes a buffer around simple feature geometries of `sfg`, `sfc` and `sfc` objects, returning an object of the same class.
+  - Buffer distance parameter is in map units (typically meters).
+  - See `?st_buffer` for more info.
 
 # Visualise spatial vector layer together with a Landsat 8 image from Wageningen 
 
@@ -110,7 +110,7 @@ Step by step we will:
 
 ## Prepare the data
 
-```{r}
+```{r, eval=FALSE}
 # Install necessary packages and load them
 if(!"terra" %in% installed.packages()){install.packages("terra")}
 if(!"sf" %in% installed.packages()){install.packages("sf")}
@@ -136,7 +136,7 @@ wagLandsat <- rast(landsatPath)
 
 We can start by visualizing the data. Since it is a multispectral image, we can use `plotRGB()` to do so.
 
-```{r, fig.align='center'}
+```{r, eval=FALSE, fig.align='center'}
 # plotRGB does not support negative values, so we remove them
 wagLandsat[wagLandsat < 0] <- NA
 
@@ -149,7 +149,7 @@ plotRGB(wagLandsat, 5, 4, 3, stretch = 'lin')
 
 We have chosen to visualize the Landsat image as a false color composite, meaning that the chosen bands do not match the RGB channels. Indeed, we have plotted the near-infrared band as red, the red as green, and the green as blue.
 
-```{r}
+```{r, eval=FALSE}
 # Download and unzip the Dutch municipalities boundaries
 download.file(url = 'https://github.com/GeoScripting-WUR/Scripting4GeoIntro/releases/download/data/data.zip', destfile = 'data/GADM.zip')
 unzip('data/GADM.zip', exdir = "data")
@@ -163,7 +163,7 @@ head(nlCitySf)
 
 It seems that the municipality names are in the `NAME_2` column. So we can subset the `sf data.frame` to the city of Wageningen alone. To do so we can use simple data frame manipulation/subsetting syntax.
 
-```{r}
+```{r, eval=FALSE}
 # Remove rows with NA
 nlCitySf <- nlCitySf[!is.na(nlCitySf$NAME_2),]
 
@@ -177,7 +177,7 @@ We can use the resulting `wagContour` object, to mask the values out of Wagening
 > **Question 1:** Would you rather reproject a raster or a vector layer? Give two reasons why you would choose to reproject a raster or vector.
 ```
 
-```{r, message=FALSE}
+```{r, eval=FALSE, message=FALSE}
 # Get the target CRS from the wagLandsat raster object
 targetCRS <- st_crs(wagLandsat)
 
@@ -189,7 +189,7 @@ Now that the two objects are in the same CRS, we can do the masking and visualiz
 
 ## Crop, mask and visualise 
 
-```{r, fig.align='center', fig.show='hold'}
+```{r, eval=FALSE, fig.align='center', fig.show='hold'}
 wagLandsatCrop <- crop(wagLandsat, wagContourUTM)
 wagLandsatSub <- mask(wagLandsat, wagContourUTM)
 
@@ -211,7 +211,7 @@ We also have a water mask of Wageningen in vector format. Let's download it and 
 Important functions are `st_read` and `st_write`. These are very powerful functions that enable reading and writing simple features or layers from a file or database.
 ```
 
-```{r}
+```{r, eval=FALSE}
 # Download and unzip files
 download.file(url = 'https://github.com/GeoScripting-WUR/VectorRaster/releases/download/tutorial-data/wageningenWater.zip', destfile = 'data/wageningenWater.zip')
 unzip('data/wageningenWater.zip', exdir = "data")
@@ -226,7 +226,7 @@ waterUTM <- st_transform(water, targetCRS)
 
 Note the use of `inverse = TRUE` in the code below, to *mask* the pixels that intersect with the features of the vector object.
 
-```{r, fig.align='center'}
+```{r, eval=FALSE, fig.align='center'}
 # Mask the Landsat data
 wagLandsatSubW <- mask(wagLandsatSub, mask = waterUTM, inverse = TRUE)
 
@@ -277,7 +277,7 @@ Another use of the `extract()` function can be to visualize or analyse data alon
 
 Let's first download the elevation data of Belgium:
 
-```{r}
+```{r, eval=FALSE}
 # Download to data directory
 download.file(url = 'https://github.com/GeoScripting-WUR/VectorRaster/releases/download/tutorial-data/belgium_elev.zip', destfile = 'data/belgium_elev.zip')
 
@@ -293,16 +293,16 @@ bel
 
 We can start by visualizing the data.
 
-```{r, fig.align='center'}
+```{r, eval=FALSE, fig.align='center'}
 plot(bel)
 ```
 
 Everything seems correct.
 
-We want to look at a transect, which we can draw by using two points. The `vect()` function will help us do that. It requires a matrix of the coordinates. Once you run the function, you will be able to click in the plotting window of R (The `bel` object should already be present in the plot panel before running `draw('line')`). Press *esc* once you have selected the two extremities of the line.
+We want to look at a transect, which we can draw by using two points. We will use the `st_linestring()` function to draw the line between two coordinates.
 
 
-```{r}
+```{r, eval=FALSE}
 # Create two coordinates, start and end of the transect
 p1 <- c(2.75, 51.25) # (lat, lon)
 p2 <- c(6, 49.75)
@@ -311,33 +311,34 @@ p2 <- c(6, 49.75)
 coords <- rbind(p1, p2)
 
 # Create the transect between p1 and p2
-line <- vect(coords, type = "lines", crs = "EPSG:4326")
+line <- st_sfc(st_linestring(coords), crs = "EPSG:4326") # st_sfc adds a crs
+line_sf <- st_sf(line) # transform to spatial feature object
 ```
 
-```{r, echo=FALSE, fig.align='center'}
+```{r, eval=FALSE, echo=FALSE, fig.align='center'}
 plot(bel)
-plot(line, add=TRUE)
+plot(line_sf, add=TRUE)
 ```
 
-Let's first write this line to a file, using a few different file formats. Note that `vect()` returns a SpatVector. That means we cannot (directly) use `st_write()` here like we did before. Using the overview table at the start of this tutorial, we can change that using `st_as_sf()`. After writing to disk, you might try opening these new files in R, or in different software, such as QGIS or ArcGIS.
+Let's first write this line to a file, using a few different file formats. We can use `st_write()` here like we did before. After writing to disk, you might try opening these new files in R, or in different software, such as QGIS or ArcGIS.
 
 ```{r, eval=FALSE}
 # To a GeoJSON
-st_write(st_as_sf(line), 'output/line.geojson')
+st_write(line_sf, 'output/line.geojson')
 
 # To an ESRI Shapefile
-st_write(st_as_sf(line), 'output/line.shp')
+st_write(line_sf, 'output/line.shp')
 ```
 
 Now the elevation values can simply be extracted using `extract()`.
 
-```{r}
-alt <- extract(bel, line)
+```{r, eval=FALSE}
+alt <- extract(bel, line_sf)
 ```
 
 We can plot the result as follows.
 
-```{r, fig.align='center'}
+```{r, eval=FALSE, fig.align='center'}
 plot(alt$BEL_msk_alt, type = 'l', ylab = "Altitude (m)")
 ```
 
