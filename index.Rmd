@@ -110,7 +110,7 @@ Step by step we will:
 
 ## Prepare the data
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 # Install necessary packages and load them
 if(!"terra" %in% installed.packages()){install.packages("terra")}
 if(!"sf" %in% installed.packages()){install.packages("sf")}
@@ -136,7 +136,7 @@ wagLandsat <- rast(landsatPath)
 
 We can start by visualizing the data. Since it is a multispectral image, we can use `plotRGB()` to do so.
 
-```{r, eval=FALSE, fig.align='center'}
+```{r, eval=TRUE, fig.align='center'}
 # plotRGB does not support negative values, so we remove them
 wagLandsat[wagLandsat < 0] <- NA
 
@@ -149,7 +149,7 @@ plotRGB(wagLandsat, 5, 4, 3, stretch = 'lin')
 
 We have chosen to visualize the Landsat image as a false color composite, meaning that the chosen bands do not match the RGB channels. Indeed, we have plotted the near-infrared band as red, the red as green, and the green as blue.
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 # Download and unzip the Dutch municipalities boundaries
 download.file(url = 'https://github.com/GeoScripting-WUR/Scripting4GeoIntro/releases/download/data/data.zip', destfile = 'data/GADM.zip')
 unzip('data/GADM.zip', exdir = "data")
@@ -163,7 +163,7 @@ head(nlCitySf)
 
 It seems that the municipality names are in the `NAME_2` column. So we can subset the `sf data.frame` to the city of Wageningen alone. To do so we can use simple data frame manipulation/subsetting syntax.
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 # Remove rows with NA
 nlCitySf <- nlCitySf[!is.na(nlCitySf$NAME_2),]
 
@@ -177,7 +177,7 @@ We can use the resulting `wagContour` object, to mask the values out of Wagening
 > **Question 1:** Would you rather reproject a raster or a vector layer? Give two reasons why you would choose to reproject a raster or vector.
 ```
 
-```{r, eval=FALSE, message=FALSE}
+```{r, eval=TRUE, message=FALSE}
 # Get the target CRS from the wagLandsat raster object
 targetCRS <- st_crs(wagLandsat)
 
@@ -189,7 +189,7 @@ Now that the two objects are in the same CRS, we can do the masking and visualiz
 
 ## Crop, mask and visualise 
 
-```{r, eval=FALSE, fig.align='center', fig.show='hold'}
+```{r, eval=TRUE, fig.align='center', fig.show='hold'}
 wagLandsatCrop <- crop(wagLandsat, wagContourUTM)
 wagLandsatSub <- mask(wagLandsat, wagContourUTM)
 
@@ -211,7 +211,7 @@ We also have a water mask of Wageningen in vector format. Let's download it and 
 Important functions are `st_read` and `st_write`. These are very powerful functions that enable reading and writing simple features or layers from a file or database.
 ```
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 # Download and unzip files
 download.file(url = 'https://github.com/GeoScripting-WUR/VectorRaster/releases/download/tutorial-data/wageningenWater.zip', destfile = 'data/wageningenWater.zip')
 unzip('data/wageningenWater.zip', exdir = "data")
@@ -226,7 +226,7 @@ waterUTM <- st_transform(water, targetCRS)
 
 Note the use of `inverse = TRUE` in the code below, to *mask* the pixels that intersect with the features of the vector object.
 
-```{r, eval=FALSE, fig.align='center'}
+```{r, eval=TRUE, fig.align='center'}
 # Mask the Landsat data
 wagLandsatSubW <- mask(wagLandsatSub, mask = waterUTM, inverse = TRUE)
 
@@ -242,7 +242,7 @@ One friend of ours is a software engineer and he wants a GeoJSON. Another friend
 You can try for yourself and e.g. start by converting them to KML and opening them in [Google My Maps](https://mymaps.google.com/).
 
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 # Create output directory if it does not yet exist
 if (!dir.exists("output")) {
   dir.create("output")
@@ -257,7 +257,7 @@ try(st_write(water, "output/water.kml", driver = "kml", delete_dsn = ifelse(file
 You can now open the created `water.kml` file in [Google My Maps](https://mymaps.google.com/) or *Google Earth Pro*.
 You can also try out other formats like e.g. `GeoJSON`. Another option for visualisation is an interactive map using [mapview](https://r-spatial.github.io/mapview/index.html), which in its turn is based on [leaflet](https://rstudio.github.io/leaflet/). The output of the simple example below can be viewed [here](mapview.html).
 
-```{r, eval=FALSE, warning=FALSE}
+```{r, eval=TRUE, warning=FALSE}
 # Install and load library
 if(!"mapview" %in% installed.packages()){install.packages("mapview")}
 if(!"webshot" %in% installed.packages()){install.packages("webshot")}
@@ -277,7 +277,7 @@ Another use of the `extract()` function can be to visualize or analyse data alon
 
 Let's first download the elevation data of Belgium:
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 # Download to data directory
 download.file(url = 'https://github.com/GeoScripting-WUR/VectorRaster/releases/download/tutorial-data/belgium_elev.zip', destfile = 'data/belgium_elev.zip')
 
@@ -293,7 +293,7 @@ bel
 
 We can start by visualizing the data.
 
-```{r, eval=FALSE, fig.align='center'}
+```{r, eval=TRUE, fig.align='center'}
 plot(bel)
 ```
 
@@ -302,7 +302,7 @@ Everything seems correct.
 We want to look at a transect, which we can draw by using two points. We will use the `st_linestring()` function to draw the line between two coordinates.
 
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 # Create two coordinates, start and end of the transect
 p1 <- c(2.75, 51.25) # (lat, lon)
 p2 <- c(6, 49.75)
@@ -315,14 +315,14 @@ line <- st_sfc(st_linestring(coords), crs = "EPSG:4326") # st_sfc adds a crs
 line_sf <- st_sf(line) # transform to spatial feature object
 ```
 
-```{r, eval=FALSE, echo=FALSE, fig.align='center'}
+```{r, eval=TRUE, echo=FALSE, fig.align='center'}
 plot(bel)
 plot(line_sf, add=TRUE)
 ```
 
 Let's first write this line to a file, using a few different file formats. We can use `st_write()` here like we did before. After writing to disk, you might try opening these new files in R, or in different software, such as QGIS or ArcGIS.
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 # To a GeoJSON
 st_write(line_sf, 'output/line.geojson')
 
@@ -332,13 +332,13 @@ st_write(line_sf, 'output/line.shp')
 
 Now the elevation values can simply be extracted using `extract()`.
 
-```{r, eval=FALSE}
+```{r, eval=TRUE}
 alt <- extract(bel, line_sf)
 ```
 
 We can plot the result as follows.
 
-```{r, eval=FALSE, fig.align='center'}
+```{r, eval=TRUE, fig.align='center'}
 plot(alt$BEL_msk_alt, type = 'l', ylab = "Altitude (m)")
 ```
 
